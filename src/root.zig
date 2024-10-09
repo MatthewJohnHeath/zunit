@@ -93,6 +93,15 @@ test "MergeStruct different"{
     const Second = BaseUnitPowerType("second");
     const Combined = MergeStruct(Meter, Second);
 
+    try testing.expect(std.meta.fields(Combined).len == 2);
     try testing.expect(@hasField(Combined, "meter"));
     try testing.expect(@hasField(Combined, "second"));
+}
+
+test "MergeStruct same"{
+    const Meter  = BaseUnitPowerType("meter");
+    const Combined = MergeStruct(Meter, Meter);
+
+    try testing.expect(std.meta.fields(Combined).len == 1);
+    try testing.expect(@hasField(Combined, "meter"));
 }
