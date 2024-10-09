@@ -102,24 +102,45 @@ test "same" {
 }
 
 fn MergeStruct(comptime First: type, comptime Second: type) type {
-    comptime var fields: [numberOfFieldsInCombined(First, Second)]StructField = undefined;
+    comptime var fields_out: [numberOfFieldsInCombined(First, Second)]StructField = undefined;
+    const fields_of_first = std.meta.fields(First);
+    const fields_of_second = std.meta.fields(Second);
+    comptime var first_index = 0;
+    comptime var second_index = 0;
 
-    for (std.meta.fields(First), 0..) |field, i| {
-        fields[i] = field;
-    }
+    for (0..fields_out.len) |i| {
+        if (second_index >= fields_of_second.len) {
+            fields_out[i] = fields_of_first[first_index];
+            first_index = first_index + 1;
+            continue;
+        }
+        if (first_index >= fields_of_first.len) {
+            fields_out[i] = fields_of_second[second_index];
+            second_index = second_index + 1;
+            continue;
+        }
 
-    comptime var i = std.meta.fields(First).len;
+        const first_field = fields_of_first[first_index];
+        const first_name = first_field.name;
+        const second_field = fields_of_second[second_index];
+        const second_name = second_field.name;
 
-    for (std.meta.fields(Second)) |field| {
-        if (!@hasField(First, field.name)) {
-            fields[i] = field;
-            i = i + 1;
+        if (same(first_name, second_name)) {
+            fields_out[i] = first_field;
+            first_index = first_index + 1;
+            second_index = second_index + 1;
+        } else if (before(first_name, second_name)) {
+            fields_out[i] = first_field;
+            first_index = first_index + 1;
+        } else {
+            fields_out[i] = second_field;
+            second_index = second_index + 1;
         }
     }
 
     return @Type(.{ .Struct = .{
         .layout = std.builtin.Type.ContainerLayout.auto,
-        .fields = &fields,
+        .fields = &fields_out,
         .decls = &[_]std.builtin.Type.Declaration{},
         .is_tuple = false,
     } });
