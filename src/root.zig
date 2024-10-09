@@ -163,3 +163,12 @@ test "MergeStruct same" {
     try testing.expect(std.meta.fields(Combined).len == 1);
     try testing.expect(@hasField(Combined, "meter"));
 }
+
+test "MergeStruct commutes" {
+    const Meter = BaseUnitPowerType("meter");
+    const Second = BaseUnitPowerType("second");
+    const MeterSecond = MergeStruct(Meter, Second);
+    const SecondMeter = MergeStruct(Meter, Second);
+
+    try testing.expect(MeterSecond == SecondMeter);
+}
