@@ -173,9 +173,9 @@ test "MergeStruct commutes" {
     try testing.expect(MeterSecond == SecondMeter);
 }
 
-fn neededSize(T: type, comptime object: T) comptime_int {
+fn neededSize(comptime object: anytype) comptime_int {
     comptime var count = 0;
-    for (std.meta.fieldNames(T)) |name| {
+    for (std.meta.fieldNames(@TypeOf(object))) |name| {
         if (@field(object, name) != 0) {
             count = count + 1;
         }
@@ -192,5 +192,5 @@ test "needed size" {
         .meter = 0,
         .second = -1,
     };
-    try testing.expect(neededSize(MeterSecond, noMetersPerSecond) == 1);
+    try testing.expect(neededSize(noMetersPerSecond) == 1);
 }
