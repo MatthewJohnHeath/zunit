@@ -198,8 +198,8 @@ test "needed size" {
 fn TrimmedType(comptime object: anytype) type {
     comptime var fields: [neededSize(object)]StructField = undefined;
     comptime var i = 0;
-    for(std.meta.fields(@TypeOf(object)))|field|{
-        if (@field(object, field.name) != 0){
+    for (std.meta.fields(@TypeOf(object))) |field| {
+        if (@field(object, field.name) != 0) {
             fields[i] = field;
             i = i + 1;
         }
@@ -226,17 +226,17 @@ test "TrimmedType" {
     try testing.expect(@hasField(Trimmed, "second"));
 }
 
-fn trim(comptime object : anytype) TrimmedType(object){
-    const Trimmed =  TrimmedType(object);
-    comptime var trimmed:Trimmed = undefined;
-    
-    for(std.meta.fieldNames(Trimmed))|fieldName|{
-            @field(trimmed, fieldName) = @field(object, fieldName);
-     }
+fn trim(comptime object: anytype) TrimmedType(object) {
+    const Trimmed = TrimmedType(object);
+    comptime var trimmed: Trimmed = undefined;
+
+    for (std.meta.fieldNames(Trimmed)) |fieldName| {
+        @field(trimmed, fieldName) = @field(object, fieldName);
+    }
     return trimmed;
 }
 
-test "trim"{
+test "trim" {
     const MeterSecond = struct {
         meter: comptime_int,
         second: comptime_int,
@@ -250,23 +250,23 @@ test "trim"{
     try testing.expect(trimmed.second == noMetersPerSecond.second);
 }
 
-fn untrimmedMultiply(comptime first: anytype, comptime second : anytype) MergeStruct(@TypeOf(first), @TypeOf(second)){
+fn untrimmedMultiply(comptime first: anytype, comptime second: anytype) MergeStruct(@TypeOf(first), @TypeOf(second)) {
     const Merged = MergeStruct(@TypeOf(first), @TypeOf(second));
-    comptime var merged : Merged = undefined;
-    for(std.meta.fieldNames(Merged))|name|{
-        @field(merged, name ) = 0;
-        if(@hasField(@TypeOf(first), name)){
+    comptime var merged: Merged = undefined;
+    for (std.meta.fieldNames(Merged)) |name| {
+        @field(merged, name) = 0;
+        if (@hasField(@TypeOf(first), name)) {
             @field(merged, name) = @field(first, name);
         }
-        if(@hasField(@TypeOf(second), name)){
+        if (@hasField(@TypeOf(second), name)) {
             @field(merged, name) = @field(merged, name) + @field(second, name);
         }
     }
     return merged;
 }
 
-fn multiplyUnits(comptime first: anytype, comptime second : anytype) @TypeOf(trim(untrimmedMultiply(first, second))) {
-    return trim(untrimmedMultiply(first, second)) ;
+fn multiplyUnits(comptime first: anytype, comptime second: anytype) @TypeOf(trim(untrimmedMultiply(first, second))) {
+    return trim(untrimmedMultiply(first, second));
 }
 
 test "multiplyUnits" {
@@ -288,16 +288,16 @@ test "multiplyUnits" {
     try testing.expect(meterSquare.meter == 2);
 }
 
-fn invertUnit(comptime unit : anytype)@TypeOf(unit){
+fn invertUnit(comptime unit: anytype) @TypeOf(unit) {
     const UnitType = @TypeOf(unit);
-    comptime var inverted: UnitType = undefined; 
-    for(std.meta.fieldNames(UnitType))|name|{
+    comptime var inverted: UnitType = undefined;
+    for (std.meta.fieldNames(UnitType)) |name| {
         @field(inverted, name) = -@field(unit, name);
     }
     return inverted;
 }
 
-test "invertUnit"{
+test "invertUnit" {
     const MeterSecond = struct {
         meter: comptime_int,
         second: comptime_int,
@@ -309,4 +309,41 @@ test "invertUnit"{
     const secondsPerMeter = invertUnit(metersPerSecond);
     try testing.expect(secondsPerMeter.meter == -1);
     try testing.expect(secondsPerMeter.second == 1);
+}
+
+pub fn Quantity(comptime ScalarType: type, comptime unit_struct: anytype) type {
+    return struct {
+        value: ScalarType,
+        const unit = unit_struct;
+        const Self = @This();
+        const Scalar = ScalarType;
+
+        fn add(this: Self, other: Self) Self {
+            return Self{
+                .value = this.value + other.value,
+            };
+        }
+
+        fn sub(this: Self, other: Self) Self {
+            return Self{
+                .value = this.value - other.value,
+            };
+        }
+
+        fn mul(this: Self, other: anytype) Quantity(Scalar, multiplyUnits(this.unit, other.unit)) {
+            if (Scalar != @TypeOf(other).Scalar) {
+                @compileError("Expected matching scalar type");
+            }
+
+            return Quantity(ScalarType, multiplyUnits(this.unit, other.unit)){ .value = this.value * other.value };
+        }
+
+        fn div(this: Self, other: anytype) Quantity(Scalar, multiplyUnits(this.unit, invertUnit(other.unit))) {
+            if (Scalar != @TypeOf(other).Scalar) {
+                @compileError("Expected matching scalar type");
+            }
+
+            return Quantity(ScalarType, multiplyUnits(this.unit, invertUnit(other.unit))){ .value = this.value / other.value };
+        }
+    };
 }
