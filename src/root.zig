@@ -213,7 +213,7 @@ fn TrimmedType(comptime object: anytype) type {
 }
 
 test "TrimmedType" {
-        const MeterSecond = struct {
+    const MeterSecond = struct {
         meter: comptime_int,
         second: comptime_int,
     };
@@ -224,4 +224,31 @@ test "TrimmedType" {
     const Trimmed = TrimmedType(noMetersPerSecond);
     try testing.expect(std.meta.fields(Trimmed).len == 1);
     try testing.expect(@hasField(Trimmed, "second"));
+}
+
+fn trim(comptime object : anytype) TrimmedType(object){
+    const Trimmed =  TrimmedType(object);
+    comptime var trimmed:Trimmed = undefined;
+    
+    for(std.meta.fieldNames(@TypeOf(object)))|fieldName|{
+        if (@hasField(Trimmed, fieldName)){
+            @field(trimmed, fieldName) = @field(object, fieldName);
+        }
+
+     }
+    return trimmed;
+}
+
+test "trim"{
+    const MeterSecond = struct {
+        meter: comptime_int,
+        second: comptime_int,
+    };
+    const noMetersPerSecond = MeterSecond{
+        .meter = 0,
+        .second = -1,
+    };
+    const trimmed = trim(noMetersPerSecond);
+    try testing.expect(std.meta.fields(@TypeOf(trimmed)).len == 1);
+    try testing.expect(trimmed.second == noMetersPerSecond.second);
 }
