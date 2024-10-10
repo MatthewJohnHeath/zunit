@@ -249,3 +249,41 @@ test "trim"{
     try testing.expect(std.meta.fields(@TypeOf(trimmed)).len == 1);
     try testing.expect(trimmed.second == noMetersPerSecond.second);
 }
+
+fn untrimmedMultiply(comptime first: anytype, comptime second : anytype) MergeStruct(@TypeOf(first), @TypeOf(second)){
+    const Merged = MergeStruct(@TypeOf(first), @TypeOf(second));
+    comptime var merged : Merged = undefined;
+    for(std.meta.fieldNames(Merged))|name|{
+        @field(merged, name ) = 0;
+        if(@hasField(@TypeOf(first), name)){
+            @field(merged, name) = @field(first, name);
+        }
+        if(@hasField(@TypeOf(second), name)){
+            @field(merged, name) = @field(merged, name) + @field(second, name);
+        }
+    }
+    return merged;
+}
+
+fn multiplyUnits(comptime first: anytype, comptime second : anytype) @TypeOf(trim(untrimmedMultiply(first, second))) {
+    return trim(untrimmedMultiply(first, second)) ;
+}
+
+test "multiplyUnits" {
+    const MeterSecond = struct {
+        meter: comptime_int,
+        second: comptime_int,
+    };
+    const metersPerSecond = MeterSecond{
+        .meter = 1,
+        .second = -1,
+    };
+    const meterSecond = MeterSecond{
+        .meter = 1,
+        .second = 1,
+    };
+    const meterSquare = multiplyUnits(metersPerSecond, meterSecond);
+
+    try testing.expect(std.meta.fields(@TypeOf(meterSquare)).len == 1);
+    try testing.expect(meterSquare.meter == 2);
+}
