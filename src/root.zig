@@ -230,11 +230,8 @@ fn trim(comptime object : anytype) TrimmedType(object){
     const Trimmed =  TrimmedType(object);
     comptime var trimmed:Trimmed = undefined;
     
-    for(std.meta.fieldNames(@TypeOf(object)))|fieldName|{
-        if (@hasField(Trimmed, fieldName)){
+    for(std.meta.fieldNames(Trimmed))|fieldName|{
             @field(trimmed, fieldName) = @field(object, fieldName);
-        }
-
      }
     return trimmed;
 }
