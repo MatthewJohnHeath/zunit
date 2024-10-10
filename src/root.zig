@@ -194,3 +194,34 @@ test "needed size" {
     };
     try testing.expect(neededSize(noMetersPerSecond) == 1);
 }
+
+fn TrimmedType(comptime object: anytype) type {
+    comptime var fields: [neededSize(object)]StructField = undefined;
+    comptime var i = 0;
+    for(std.meta.fields(@TypeOf(object)))|field|{
+        if (@field(object, field.name) != 0){
+            fields[i] = field;
+            i = i + 1;
+        }
+    }
+    return @Type(.{ .Struct = .{
+        .layout = std.builtin.Type.ContainerLayout.auto,
+        .fields = &fields,
+        .decls = &[_]std.builtin.Type.Declaration{},
+        .is_tuple = false,
+    } });
+}
+
+test "TrimmedType" {
+        const MeterSecond = struct {
+        meter: comptime_int,
+        second: comptime_int,
+    };
+    const noMetersPerSecond = MeterSecond{
+        .meter = 0,
+        .second = -1,
+    };
+    const Trimmed = TrimmedType(noMetersPerSecond);
+    try testing.expect(std.meta.fields(Trimmed).len == 1);
+    try testing.expect(@hasField(Trimmed, "second"));
+}
