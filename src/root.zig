@@ -287,3 +287,26 @@ test "multiplyUnits" {
     try testing.expect(std.meta.fields(@TypeOf(meterSquare)).len == 1);
     try testing.expect(meterSquare.meter == 2);
 }
+
+fn invertUnit(comptime unit : anytype)@TypeOf(unit){
+    const UnitType = @TypeOf(unit);
+    comptime var inverted: UnitType = undefined; 
+    for(std.meta.fieldNames(UnitType))|name|{
+        @field(inverted, name) = -@field(unit, name);
+    }
+    return inverted;
+}
+
+test "invertUnit"{
+    const MeterSecond = struct {
+        meter: comptime_int,
+        second: comptime_int,
+    };
+    const metersPerSecond = MeterSecond{
+        .meter = 1,
+        .second = -1,
+    };
+    const secondsPerMeter = invertUnit(metersPerSecond);
+    try testing.expect(secondsPerMeter.meter == -1);
+    try testing.expect(secondsPerMeter.second == 1);
+}
