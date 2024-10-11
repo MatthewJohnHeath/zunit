@@ -318,6 +318,10 @@ pub fn Quantity(comptime ScalarType: type, comptime unit_struct: anytype) type {
         const Self = @This();
         const Scalar = ScalarType;
 
+        fn init(val: Scalar) Self {
+            return Self{ .value = val };
+        }
+
         fn add(this: Self, other: Self) Self {
             return Self{
                 .value = this.value + other.value,
@@ -346,4 +350,20 @@ pub fn Quantity(comptime ScalarType: type, comptime unit_struct: anytype) type {
             return Quantity(ScalarType, multiplyUnits(this.unit, invertUnit(other.unit))){ .value = this.value / other.value };
         }
     };
+}
+
+test "add" {
+    const F32Meter = Quantity(f32, baseUnit("meter"));
+    const oneMeter = F32Meter.init(1.0);
+    const twoMeters = F32Meter.init(2.0);
+
+    try testing.expect(oneMeter.add(twoMeters).value == 3);
+}
+
+test "sub" {
+    const F32Meter = Quantity(f32, baseUnit("meter"));
+    const oneMeter = F32Meter.init(1.0);
+    const twoMeters = F32Meter.init(2.0);
+
+    try testing.expect(oneMeter.sub(twoMeters).value == -1);
 }
