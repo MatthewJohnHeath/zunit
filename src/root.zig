@@ -344,20 +344,20 @@ pub fn Quantity(comptime ScalarType: type, comptime unit_struct: anytype) type {
             };
         }
 
-        fn mul(this: Self, other: anytype) Quantity(Scalar, multiplyUnits(this.unit, other.unit)) {
+        fn mul(this: Self, other: anytype) Quantity(Scalar, multiplyUnits(unit, @TypeOf(other).unit)) {
             if (Scalar != @TypeOf(other).Scalar) {
                 @compileError("Expected matching scalar type");
             }
 
-            return Quantity(ScalarType, multiplyUnits(this.unit, other.unit)){ .value = this.value * other.value };
+            return Quantity(ScalarType, multiplyUnits(unit, @TypeOf(other).unit)){ .value = this.value * other.value };
         }
 
-        fn div(this: Self, other: anytype) Quantity(Scalar, multiplyUnits(this.unit, invertUnit(other.unit))) {
+        fn div(this: Self, other: anytype) Quantity(Scalar, multiplyUnits(unit, @TypeOf(other).unit)) {
             if (Scalar != @TypeOf(other).Scalar) {
                 @compileError("Expected matching scalar type");
             }
 
-            return Quantity(ScalarType, multiplyUnits(this.unit, invertUnit(other.unit))){ .value = this.value / other.value };
+            return Quantity(ScalarType, multiplyUnits(unit, invertUnit(@TypeOf(unit)))){ .value = this.value / other.value };
         }
     };
 }
@@ -395,4 +395,17 @@ test "sub" {
     const minusOneMeter = F32Meter.init(-1.0);
 
     try testing.expect(oneMeter.sub(twoMeters).eq(minusOneMeter));
+}
+
+test "mul" {
+    const F32Meter = Quantity(f32, baseUnit("meter"));
+    const F32Second = Quantity(f32, baseUnit("second"));
+    const meter_second = multiplyUnits(baseUnit("meter"), baseUnit("second"));
+    const F32MeterSecond = Quantity(f32, meter_second);
+
+    const two_meters = F32Meter.init(2.0);
+    const three_seconds = F32Second.init(3.0);
+    const six_meter_seconds = F32MeterSecond.init(6.0);
+
+    try testing.expect(two_meters.mul(three_seconds).eq(six_meter_seconds));
 }
