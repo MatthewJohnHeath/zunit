@@ -2,10 +2,10 @@ const std = @import("std");
 const testing = std.testing;
 const StructField = std.builtin.Type.StructField;
 
-fn i32Field(comptime fieldName: [:0]const u8) StructField {
+fn intField(comptime fieldName: [:0]const u8) StructField {
     return StructField{
         .name = fieldName,
-        .type = i32,
+        .type = comptime_int,
         .default_value = null,
         .is_comptime = false,
         .alignment = 0,
@@ -13,14 +13,14 @@ fn i32Field(comptime fieldName: [:0]const u8) StructField {
 }
 
 test "struct field is something" {
-    try testing.expect(i32Field("meter").name[0] == 'm');
+    try testing.expect(intField("meter").name[0] == 'm');
 }
 
 fn BaseUnitPowerType(comptime name: [:0]const u8) type {
     return @Type(.{
         .Struct = .{
             .layout = std.builtin.Type.ContainerLayout.auto,
-            .fields = &[_]StructField{i32Field(name)},
+            .fields = &[_]StructField{intField(name)},
             .decls = &[_]std.builtin.Type.Declaration{},
             .is_tuple = false,
         },
