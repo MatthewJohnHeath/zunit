@@ -352,12 +352,13 @@ pub fn Quantity(comptime ScalarType: type, comptime unit_struct: anytype) type {
             return Quantity(ScalarType, multiplyUnits(unit, @TypeOf(other).unit)){ .value = this.value * other.value };
         }
 
-        fn div(this: Self, other: anytype) Quantity(Scalar, multiplyUnits(unit, @TypeOf(other).unit)) {
-            if (Scalar != @TypeOf(other).Scalar) {
+        fn div(this: Self, other: anytype) Quantity(Scalar, multiplyUnits(unit, invertUnit(@TypeOf(other).unit))) {
+            const Other = @TypeOf(other);
+            if (Scalar != Other.Scalar) {
                 @compileError("Expected matching scalar type");
             }
 
-            return Quantity(ScalarType, multiplyUnits(unit, invertUnit(@TypeOf(unit)))){ .value = this.value / other.value };
+            return Quantity(ScalarType, multiplyUnits(unit, invertUnit(Other.unit))){ .value = this.value / other.value };
         }
     };
 }
@@ -408,4 +409,20 @@ test "mul" {
     const six_meter_seconds = F32MeterSecond.init(6.0);
 
     try testing.expect(two_meters.mul(three_seconds).eq(six_meter_seconds));
+}
+
+test "div" {
+    const meter = baseUnit("meter");
+    const second = baseUnit("second");
+    const per_second = invertUnit(second);
+    const meter_per_second = multiplyUnits(meter, per_second);
+    const F32Meter = Quantity(f32, meter);
+    const F32Second = Quantity(f32, second);
+    const F32MeterPerSecond = Quantity(f32, meter_per_second);
+
+    const three_meters = F32Meter.init(3.0);
+    const two_seconds = F32Second.init(2.0);
+    const one_point_five_mps = F32MeterPerSecond.init(1.5);
+
+    try testing.expect(three_meters.div(two_seconds).eq(one_point_five_mps));
 }
