@@ -322,7 +322,7 @@ pub fn Quantity(comptime ScalarType: type, comptime unit_struct: anytype) type {
             return Self{ .value = val };
         }
 
-        pub fn eq(this: Self, other: Self) bool {
+        pub fn eq(this: Self, other: anytype) bool {
             return this.value == other.value;
         }
 
@@ -358,9 +358,11 @@ test "eq" {
     const F32Meter = Quantity(f32, baseUnit("meter"));
     const oneMeter = F32Meter.init(1.0);
     const twoMeters = F32Meter.init(2.0);
+    const oneMeterF16 = Quantity(f32, baseUnit("meter")).init(1.0);
 
     try testing.expect(oneMeter.eq(oneMeter));
     try testing.expect(!oneMeter.eq(twoMeters));
+    try testing.expect(oneMeter.eq(oneMeterF16));
 }
 
 test "neg" {
