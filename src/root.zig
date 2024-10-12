@@ -317,6 +317,7 @@ pub fn Quantity(comptime ScalarType: type, comptime unit_struct: anytype) type {
         const unit = unit_struct;
         const Self = @This();
         const Scalar = ScalarType;
+        pub const Reciprocal = Quantity(Scalar, invertUnit(unit));
 
         pub fn init(val: Scalar) Self {
             return Self{ .value = val };
@@ -344,26 +345,26 @@ pub fn Quantity(comptime ScalarType: type, comptime unit_struct: anytype) type {
             };
         }
 
-        fn ProductType(Other: type) type {
+        pub fn Times(Other: type) type {
             const other: Other = undefined;
             const self: Self = undefined;
             return Quantity(@TypeOf(self.value, other.value), multiplyUnits(unit, Other.unit));
         }
 
-        pub fn mul(this: Self, other: anytype) ProductType(@TypeOf(other)) {
-            return Quantity(@TypeOf(this.value, other.value), multiplyUnits(unit, @TypeOf(other).unit)){ .value = this.value * other.value };
+        pub fn mul(this: Self, other: anytype) Times(@TypeOf(other)) {
+            return Times(@TypeOf(other)){ .value = this.value * other.value };
         }
 
-        fn ReciprocalType() type {
-            return Quantity(Scalar, invertUnit(unit));
+        pub fn reciprocal(self: Self) Reciprocal {
+            return Reciprocal{ .value = 1 / self.value };
         }
 
-        pub fn reciprocal(self: Self) ReciprocalType() {
-            return ReciprocalType(){ .value = 1 / self.value };
+        pub fn Per(Other: type) type {
+            return Times(Other.Reciprocal);
         }
 
-        pub fn div(this: Self, other: anytype) Quantity(@TypeOf(this.value, other.value), multiplyUnits(unit, invertUnit(@TypeOf(other).unit))) {
-            return Quantity(@TypeOf(this.value, other.value), multiplyUnits(unit, invertUnit(@TypeOf(other).unit))){ .value = this.value / other.value };
+        pub fn div(this: Self, other: anytype) Per(@TypeOf(other)) {
+            return Per(@TypeOf(other)){ .value = this.value / other.value };
         }
     };
 }
