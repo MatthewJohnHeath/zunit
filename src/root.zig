@@ -402,18 +402,33 @@ test "mul" {
     try testing.expect(two_meters.mul(three_seconds).eq(six_meter_seconds));
 }
 
+test "mul with type resolution" {
+    const F32Meter = Quantity(f32, baseUnit("meter"));
+    const F32Second = Quantity(f16, baseUnit("second"));
+    const meter_second = multiplyUnits(baseUnit("meter"), baseUnit("second"));
+    const F32MeterSecond = Quantity(f32, meter_second);
+    const two_meters = F32Meter.init(2.0);
+    const three_seconds = F32Second.init(3.0);
+    const six_meter_seconds = F32MeterSecond.init(6.0);
+    const product = two_meters.mul(three_seconds);
+
+    try testing.expect(product.eq(six_meter_seconds));
+    try testing.expect(@TypeOf(product) == F32MeterSecond);
+}
+
 test "div" {
     const meter = baseUnit("meter");
     const second = baseUnit("second");
     const per_second = invertUnit(second);
     const meter_per_second = multiplyUnits(meter, per_second);
     const F32Meter = Quantity(f32, meter);
-    const F32Second = Quantity(f32, second);
+    const F32Second = Quantity(f16, second);
     const F32MeterPerSecond = Quantity(f32, meter_per_second);
-
     const three_meters = F32Meter.init(3.0);
     const two_seconds = F32Second.init(2.0);
     const one_point_five_mps = F32MeterPerSecond.init(1.5);
+    const quotient = three_meters.div(two_seconds);
 
-    try testing.expect(three_meters.div(two_seconds).eq(one_point_five_mps));
+    try testing.expect(quotient.eq(one_point_five_mps));
+    try testing.expect(@TypeOf(quotient) == F32MeterPerSecond);
 }
