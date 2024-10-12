@@ -332,14 +332,14 @@ pub fn Quantity(comptime ScalarType: type, comptime unit_struct: anytype) type {
             };
         }
 
-        pub fn add(this: Self, other: Self) Self {
-            return Self{
+        pub fn add(this: Self, other: anytype) Quantity(@TypeOf(this.value, other.value), unit) {
+            return Quantity(@TypeOf(this.value, other.value), unit){
                 .value = this.value + other.value,
             };
         }
 
-        pub fn sub(this: Self, other: Self) Self {
-            return Self{
+        pub fn sub(this: Self, other: anytype) Quantity(@TypeOf(this.value, other.value), unit) {
+            return Quantity(@TypeOf(this.value, other.value), unit){
                 .value = this.value - other.value,
             };
         }
@@ -376,19 +376,25 @@ test "neg" {
 test "add" {
     const F32Meter = Quantity(f32, baseUnit("meter"));
     const oneMeter = F32Meter.init(1.0);
-    const twoMeters = F32Meter.init(2.0);
+    const twoMeters = Quantity(f16, baseUnit("meter")).init(2.0);
     const threeMeters = F32Meter.init(3.0);
 
-    try testing.expect(oneMeter.add(twoMeters).eq(threeMeters));
+    const sum = oneMeter.add(twoMeters);
+
+    try testing.expect(sum.eq(threeMeters));
+    try testing.expect(@TypeOf(sum) == F32Meter);
 }
 
 test "sub" {
     const F32Meter = Quantity(f32, baseUnit("meter"));
     const oneMeter = F32Meter.init(1.0);
-    const twoMeters = F32Meter.init(2.0);
+    const twoMeters = Quantity(f16, baseUnit("meter")).init(2.0);
     const minusOneMeter = F32Meter.init(-1.0);
 
-    try testing.expect(oneMeter.sub(twoMeters).eq(minusOneMeter));
+    const difference = oneMeter.sub(twoMeters);
+
+    try testing.expect(difference.eq(minusOneMeter));
+    try testing.expect(@TypeOf(difference) == F32Meter);
 }
 
 test "mul" {
