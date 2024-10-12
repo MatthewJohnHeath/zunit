@@ -344,7 +344,13 @@ pub fn Quantity(comptime ScalarType: type, comptime unit_struct: anytype) type {
             };
         }
 
-        pub fn mul(this: Self, other: anytype) Quantity(@TypeOf(this.value, other.value), multiplyUnits(unit, @TypeOf(other).unit)) {
+        fn ProductType(Other: type) type {
+            const other: Other = undefined;
+            const self: Self = undefined;
+            return Quantity(@TypeOf(self.value, other.value), multiplyUnits(unit, Other.unit));
+        }
+
+        pub fn mul(this: Self, other: anytype) ProductType(@TypeOf(other)) {
             return Quantity(@TypeOf(this.value, other.value), multiplyUnits(unit, @TypeOf(other).unit)){ .value = this.value * other.value };
         }
 
