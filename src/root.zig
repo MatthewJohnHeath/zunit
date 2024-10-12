@@ -318,33 +318,33 @@ pub fn Quantity(comptime ScalarType: type, comptime unit_struct: anytype) type {
         const Self = @This();
         const Scalar = ScalarType;
 
-        fn init(val: Scalar) Self {
+        pub fn init(val: Scalar) Self {
             return Self{ .value = val };
         }
 
-        fn eq(this: Self, other: Self) bool {
+        pub fn eq(this: Self, other: Self) bool {
             return this.value == other.value;
         }
 
-        fn neg(this: Self) Self {
+        pub fn neg(this: Self) Self {
             return Self{
                 .value = -this.value,
             };
         }
 
-        fn add(this: Self, other: Self) Self {
+        pub fn add(this: Self, other: Self) Self {
             return Self{
                 .value = this.value + other.value,
             };
         }
 
-        fn sub(this: Self, other: Self) Self {
+        pub fn sub(this: Self, other: Self) Self {
             return Self{
                 .value = this.value - other.value,
             };
         }
 
-        fn mul(this: Self, other: anytype) Quantity(Scalar, multiplyUnits(unit, @TypeOf(other).unit)) {
+        pub fn mul(this: Self, other: anytype) Quantity(Scalar, multiplyUnits(unit, @TypeOf(other).unit)) {
             if (Scalar != @TypeOf(other).Scalar) {
                 @compileError("Expected matching scalar type");
             }
@@ -352,7 +352,7 @@ pub fn Quantity(comptime ScalarType: type, comptime unit_struct: anytype) type {
             return Quantity(ScalarType, multiplyUnits(unit, @TypeOf(other).unit)){ .value = this.value * other.value };
         }
 
-        fn div(this: Self, other: anytype) Quantity(Scalar, multiplyUnits(unit, invertUnit(@TypeOf(other).unit))) {
+        pub fn div(this: Self, other: anytype) Quantity(Scalar, multiplyUnits(unit, invertUnit(@TypeOf(other).unit))) {
             const Other = @TypeOf(other);
             if (Scalar != Other.Scalar) {
                 @compileError("Expected matching scalar type");
