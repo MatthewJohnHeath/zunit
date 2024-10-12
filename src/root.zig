@@ -344,21 +344,12 @@ pub fn Quantity(comptime ScalarType: type, comptime unit_struct: anytype) type {
             };
         }
 
-        pub fn mul(this: Self, other: anytype) Quantity(Scalar, multiplyUnits(unit, @TypeOf(other).unit)) {
-            if (Scalar != @TypeOf(other).Scalar) {
-                @compileError("Expected matching scalar type");
-            }
-
-            return Quantity(ScalarType, multiplyUnits(unit, @TypeOf(other).unit)){ .value = this.value * other.value };
+        pub fn mul(this: Self, other: anytype) Quantity(@TypeOf(this.value, other.value), multiplyUnits(unit, @TypeOf(other).unit)) {
+            return Quantity(@TypeOf(this.value, other.value), multiplyUnits(unit, @TypeOf(other).unit)){ .value = this.value * other.value };
         }
 
-        pub fn div(this: Self, other: anytype) Quantity(Scalar, multiplyUnits(unit, invertUnit(@TypeOf(other).unit))) {
-            const Other = @TypeOf(other);
-            if (Scalar != Other.Scalar) {
-                @compileError("Expected matching scalar type");
-            }
-
-            return Quantity(ScalarType, multiplyUnits(unit, invertUnit(Other.unit))){ .value = this.value / other.value };
+        pub fn div(this: Self, other: anytype) Quantity(@TypeOf(this.value, other.value), multiplyUnits(unit, invertUnit(@TypeOf(other).unit))) {
+            return Quantity(@TypeOf(this.value, other.value), multiplyUnits(unit, invertUnit(@TypeOf(other).unit))){ .value = this.value / other.value };
         }
     };
 }
