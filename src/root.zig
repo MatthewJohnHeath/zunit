@@ -354,6 +354,14 @@ pub fn Quantity(comptime ScalarType: type, comptime unit_struct: anytype) type {
             return Quantity(@TypeOf(this.value, other.value), multiplyUnits(unit, @TypeOf(other).unit)){ .value = this.value * other.value };
         }
 
+        fn ReciprocalType() type {
+            return Quantity(Scalar, invertUnit(unit));
+        }
+
+        pub fn reciprocal(self: Self) ReciprocalType() {
+            return ReciprocalType(){ .value = 1 / self.value };
+        }
+
         pub fn div(this: Self, other: anytype) Quantity(@TypeOf(this.value, other.value), multiplyUnits(unit, invertUnit(@TypeOf(other).unit))) {
             return Quantity(@TypeOf(this.value, other.value), multiplyUnits(unit, invertUnit(@TypeOf(other).unit))){ .value = this.value / other.value };
         }
@@ -430,16 +438,23 @@ test "mul with type resolution" {
     try testing.expect(@TypeOf(product) == F32MeterSecond);
 }
 
+test "reciprocal" {
+    const second = baseUnit("second");
+    const twoSeconds = Quantity(f16, second).init(2.0);
+    const half_per_second = Quantity(f16, invertUnit(second)).init(0.5);
+    try testing.expect(twoSeconds.reciprocal().eq(half_per_second));
+}
+
 test "div" {
     const meter = baseUnit("meter");
     const second = baseUnit("second");
     const per_second = invertUnit(second);
     const meter_per_second = multiplyUnits(meter, per_second);
     const F32Meter = Quantity(f32, meter);
-    const F32Second = Quantity(f16, second);
+    const F16Second = Quantity(f16, second);
     const F32MeterPerSecond = Quantity(f32, meter_per_second);
     const three_meters = F32Meter.init(3.0);
-    const two_seconds = F32Second.init(2.0);
+    const two_seconds = F16Second.init(2.0);
     const one_point_five_mps = F32MeterPerSecond.init(1.5);
     const quotient = three_meters.div(two_seconds);
 
