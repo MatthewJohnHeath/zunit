@@ -37,6 +37,10 @@ const ComptimeFraction = struct {
         };
     }
 
+    pub fn eq(self: Self, other: Self) bool {
+        return self.numerator == other.numerator and self.denominator == other.denominator;
+    }
+
     pub fn neg(self: Self) Self {
         return Self{ .numerator = -self.numerator, .denominator = self.denominator };
     }
