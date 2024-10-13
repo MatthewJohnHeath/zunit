@@ -93,3 +93,16 @@ test "init" {
     try testing.expect(minus_half.numerator == -1);
     try testing.expect(minus_half.denominator == 2);
 }
+
+test "eq" {
+    const half = ComptimeFraction.init(1, 2);
+    try testing.expect(half.eq(half));
+    const third = ComptimeFraction.init(1, 3);
+    try testing.expect(!half.eq(third));
+}
+
+test "neg" {
+    const half = ComptimeFraction.init(1, 2);
+    const minus_half = ComptimeFraction.init(-1, 2);
+    try testing.expect(half.neg().eq(minus_half));
+}
