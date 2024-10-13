@@ -71,3 +71,21 @@ const ComptimeFraction = struct {
         return numerator / denominator;
     }
 };
+
+test "init" {
+    const half = ComptimeFraction.init(1, 2);
+    try testing.expect(half.numerator == 1);
+    try testing.expect(half.denominator == 2);
+
+    const third = ComptimeFraction.init(4, 12);
+    try testing.expect(third.numerator == 1);
+    try testing.expect(third.denominator == 3);
+
+    const quarter = ComptimeFraction.init(-3, -12);
+    try testing.expect(quarter.numerator == 1);
+    try testing.expect(quarter.denominator == 4);
+
+    const minus_half = ComptimeFraction.init(1 << 10, -1 << 11);
+    try testing.expect(minus_half.numerator == -1);
+    try testing.expect(minus_half.denominator == 2);
+}
