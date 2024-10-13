@@ -288,13 +288,31 @@ test "multiplyUnits" {
     try testing.expect(meterSquare.meter == 2);
 }
 
-fn invertUnit(comptime unit: anytype) @TypeOf(unit) {
+fn raiseUnitToPower(comptime unit: anytype, power: comptime_int) @TypeOf(unit) {
     const UnitType = @TypeOf(unit);
-    comptime var inverted: UnitType = undefined;
+    comptime var out: UnitType = undefined;
     for (std.meta.fieldNames(UnitType)) |name| {
-        @field(inverted, name) = -@field(unit, name);
+        @field(out, name) = power * @field(unit, name);
     }
-    return inverted;
+    return out;
+}
+
+test "raiseUnitToPower" {
+    const MeterSecond = struct {
+        meter: comptime_int,
+        second: comptime_int,
+    };
+    const metersPerSecond = MeterSecond{
+        .meter = 1,
+        .second = -1,
+    };
+    const metesSquaredPerSecondSquared = raiseUnitToPower(metersPerSecond, 2);
+    try testing.expect(metesSquaredPerSecondSquared.meter == 2);
+    try testing.expect(metesSquaredPerSecondSquared.second == -2);
+}
+
+fn invertUnit(comptime unit: anytype) @TypeOf(unit) {
+    return raiseUnitToPower(unit, -1);
 }
 
 test "invertUnit" {
@@ -311,7 +329,7 @@ test "invertUnit" {
     try testing.expect(secondsPerMeter.second == 1);
 }
 
-pub fn Quantity(comptime ScalarType: type, comptime unit_struct: anytype) type {
+fn Quantity(comptime ScalarType: type, comptime unit_struct: anytype) type {
     return struct {
         value: ScalarType,
         const unit = unit_struct;
@@ -365,6 +383,10 @@ pub fn Quantity(comptime ScalarType: type, comptime unit_struct: anytype) type {
 
         pub fn div(this: Self, other: anytype) Per(@TypeOf(other)) {
             return Per(@TypeOf(other)){ .value = this.value / other.value };
+        }
+
+        pub fn ToThe(power: comptime_int) type {
+            return Quantity(Scalar, raiseUnitToPower(unit, power));
         }
     };
 }
