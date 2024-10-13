@@ -62,6 +62,12 @@ const ComptimeFraction{
     pub fn div(self: Self, other:Self) Self{
         return self.mul(other.reciprocal());
     }
+
+    pub fn to_float(comptime self:Self) comptime_float{
+        const var numerator : comptime_float = @floatFromInt(self.numerator);
+        const var denominator : comptime_float = @floatFromInt(self.denominator);
+        retirn numerator / denominator;
+    }
 }
 test "is this found?" {
     try testing.expect(false);
