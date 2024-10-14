@@ -1,30 +1,13 @@
 const std = @import("std");
 const testing = std.testing;
 
-fn gcd(first: comptime_int, second: comptime_int) comptime_int {
-    comptime var a = @abs(first);
-    comptime var b = @abs(second);
-    while (a != 0) {
-        const temp = a;
-        a = b % a;
-        b = temp;
-    }
-    return b;
-}
-
-test "gcd" {
-    try testing.expect(gcd(6, 4) == 2);
-    try testing.expect(gcd(6, -5) == 1);
-    try testing.expect(gcd(-6, -5) == 1);
-}
-
 const ComptimeFraction = struct {
     numerator: comptime_int,
     denominator: comptime_int,
     const Self = @This();
 
     pub fn init(top: comptime_int, bottom: comptime_int) Self {
-        const divisor = gcd(top, bottom);
+        const divisor = std.math.gcd(@abs(top), @abs(bottom));
         comptime var numerator = top / divisor;
         comptime var denominator = bottom / divisor;
         if (denominator < 0) {
