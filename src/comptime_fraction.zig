@@ -157,3 +157,9 @@ test "div" {
 
     try testing.expect(quarter.div(three_halves).eq(sixth));
 }
+
+test "to_float" {
+    const third = ComptimeFraction.init(1, 3);
+    const point_three_recurring: comptime_float = 1.0 / 3.0;
+    try testing.expect(third.to_float() == point_three_recurring);
+}
