@@ -133,3 +133,27 @@ test "sub" {
     try testing.expect(half.sub(minus_third).eq(five_sixths));
     try testing.expect(half.sub(five_sixths).eq(minus_third));
 }
+
+test "reciprocal" {
+    const two_thirds = ComptimeFraction.init(2, 3);
+    const three_halves = ComptimeFraction.init(3, 2);
+
+    try testing.expect(two_thirds.reciprocal().eq(three_halves));
+    try testing.expect(three_halves.reciprocal().eq(two_thirds));
+}
+
+test "mul" {
+    const quarter = ComptimeFraction.init(1, 4);
+    const two_thirds = ComptimeFraction.init(2, 3);
+    const sixth = ComptimeFraction.init(1, 6);
+
+    try testing.expect(quarter.mul(two_thirds).eq(sixth));
+}
+
+test "div" {
+    const quarter = ComptimeFraction.init(1, 4);
+    const three_halves = ComptimeFraction.init(3, 2);
+    const sixth = ComptimeFraction.init(1, 6);
+
+    try testing.expect(quarter.div(three_halves).eq(sixth));
+}
