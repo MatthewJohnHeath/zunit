@@ -46,7 +46,7 @@ const ComptimeFraction = struct {
     }
 
     pub fn add(self: Self, other: Self) Self {
-        return init(self.numerator * other.denominator + other.numerator * self.deonominator, self.denominator * other.denominator);
+        return init(self.numerator * other.denominator + other.numerator * self.denominator, self.denominator * other.denominator);
     }
 
     pub fn sub(self: Self, other: Self) Self {
@@ -105,4 +105,31 @@ test "neg" {
     const half = ComptimeFraction.init(1, 2);
     const minus_half = ComptimeFraction.init(-1, 2);
     try testing.expect(half.neg().eq(minus_half));
+}
+
+test "add" {
+    const half = ComptimeFraction.init(1, 2);
+    const third = ComptimeFraction.init(1, 3);
+    const five_sixths = ComptimeFraction.init(5, 6);
+
+    try testing.expect(half.add(third).eq(five_sixths));
+
+    const minus_third = ComptimeFraction.init(-1, 3);
+    const sixth = ComptimeFraction.init(1, 6);
+
+    try testing.expect(half.add(minus_third).eq(sixth));
+}
+
+test "sub" {
+    const half = ComptimeFraction.init(1, 2);
+    const third = ComptimeFraction.init(1, 3);
+    const sixth = ComptimeFraction.init(1, 6);
+
+    try testing.expect(half.sub(third).eq(sixth));
+
+    const minus_third = ComptimeFraction.init(-1, 3);
+    const five_sixths = ComptimeFraction.init(5, 6);
+
+    try testing.expect(half.sub(minus_third).eq(five_sixths));
+    try testing.expect(half.sub(five_sixths).eq(minus_third));
 }
