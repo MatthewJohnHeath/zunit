@@ -30,7 +30,8 @@ fn BaseUnitPowerType(comptime name: [:0]const u8) type {
 test "can make meter power type" {
     try testing.expect(@hasField(BaseUnitPowerType("meter"), "meter"));
 }
-fn baseUnit(comptime name: [:0]const u8) BaseUnitPowerType(name) {
+
+pub fn baseUnit(comptime name: [:0]const u8) BaseUnitPowerType(name) {
     comptime var unit: BaseUnitPowerType(name) = undefined;
     @field(unit, name) = 1;
     return unit;
@@ -265,8 +266,8 @@ fn untrimmedMultiply(comptime first: anytype, comptime second: anytype) MergeStr
     return merged;
 }
 
-fn multiplyUnits(comptime first: anytype, comptime second: anytype) @TypeOf(trim(untrimmedMultiply(first, second))) {
-    return trim(untrimmedMultiply(first, second));
+pub fn multiplyUnits(comptime first: anytype, comptime second : anytype) @TypeOf(trim(untrimmedMultiply(first, second))) {
+    return trim(untrimmedMultiply(first, second)) ;
 }
 
 test "multiplyUnits" {
@@ -288,7 +289,7 @@ test "multiplyUnits" {
     try testing.expect(meterSquare.meter == 2);
 }
 
-fn raiseUnitToPower(comptime unit: anytype, power: comptime_int) @TypeOf(unit) {
+pub fn raiseUnitToPower(comptime unit: anytype, power: comptime_int) @TypeOf(unit) {
     const UnitType = @TypeOf(unit);
     comptime var out: UnitType = undefined;
     for (std.meta.fieldNames(UnitType)) |name| {
