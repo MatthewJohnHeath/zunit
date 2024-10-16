@@ -217,7 +217,11 @@ test "exact_root" {
     try testing.expect(comptime exact_root(big_square + 1, 2) == null);
 }
 
-const FractionalPower = struct {
+const FractionalRoot = struct {
     fraction: ComptimeFraction,
     power: i128,
+};
+
+const ProductOfFractionalRoots = struct {
+    roots: []FractionalRoot,
 };
