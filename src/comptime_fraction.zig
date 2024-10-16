@@ -216,3 +216,8 @@ test "exact_root" {
     try testing.expect(comptime exact_root(big_square, 2) == (1 << 11) * 3);
     try testing.expect(comptime exact_root(big_square + 1, 2) == null);
 }
+
+const FractionalPower = struct {
+    fraction: ComptimeFraction,
+    power: i128,
+};
