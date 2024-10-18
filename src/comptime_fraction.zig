@@ -217,11 +217,26 @@ test "exact_root" {
     try testing.expect(comptime exact_root(big_square + 1, 2) == null);
 }
 
-const FractionalRoot = struct {
-    fraction: ComptimeFraction,
-    power: i128,
-};
+fn distinctPrimeFactorCount(number: comptime_int) comptime_int {
+    comptime var remaining = number;
+    comptime var count = 0;
+    comptime var p = 2;
+    while (remaining > 1) {
+        if (remaining % p == 0) {
+            count += 1;
+            while (remaining % p == 0) {
+                remaining /= p;
+            }
+        }
+        p += 1;
+    }
+    return count;
+}
 
-const ProductOfFractionalRoots = struct {
-    roots: []FractionalRoot,
-};
+test "distinctPrimeFactorCount" {
+    try testing.expect(distinctPrimeFactorCount(1) == 0);
+    try testing.expect(distinctPrimeFactorCount(2) == 1);
+    try testing.expect(distinctPrimeFactorCount(6) == 2);
+    try testing.expect(distinctPrimeFactorCount(8) == 1);
+    try testing.expect(distinctPrimeFactorCount(12) == 2);
+}
