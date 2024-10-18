@@ -147,7 +147,7 @@ test "to_float" {
     try testing.expect(third.to_float() == point_three_recurring);
 }
 
-fn exact_root_by_binary_search(number: anytype, power: anytype, lower_bound: anytype, upper_bound: anytype) ?@TypeOf(number, power, lower_bound, upper_bound) {
+fn exactRootByBinarySearch(number: anytype, power: anytype, lower_bound: anytype, upper_bound: anytype) ?@TypeOf(number, power, lower_bound, upper_bound) {
     const T = @TypeOf(number, power, lower_bound, upper_bound);
     var lower = lower_bound;
     var upper = upper_bound;
@@ -166,13 +166,13 @@ fn exact_root_by_binary_search(number: anytype, power: anytype, lower_bound: any
     return null;
 }
 
-test "exact_root_by_binary_search" {
+test "exactRootByBinarySearch" {
     const one_hundred: i128 = 100;
-    try testing.expect(comptime exact_root_by_binary_search(one_hundred, 2, 0, one_hundred) == 10);
-    try testing.expect(comptime exact_root_by_binary_search(one_hundred, 3, 0, one_hundred) == null);
+    try testing.expect(comptime exactRootByBinarySearch(one_hundred, 2, 0, one_hundred) == 10);
+    try testing.expect(comptime exactRootByBinarySearch(one_hundred, 3, 0, one_hundred) == null);
 }
 
-fn exact_root(number: anytype, power: anytype) ?@TypeOf(number, power) {
+fn exactRoot(number: anytype, power: anytype) ?@TypeOf(number, power) {
     const T = @TypeOf(number, power);
     const float_number: f64 = @floatFromInt(number);
     const power_float: f64 = @floatFromInt(power);
@@ -205,16 +205,16 @@ fn exact_root(number: anytype, power: anytype) ?@TypeOf(number, power) {
         upper = floor;
         lower = ceiling + number - ceiling_raised;
     }
-    return exact_root_by_binary_search(number, power, lower, upper);
+    return exactRootByBinarySearch(number, power, lower, upper);
 }
 
-test "exact_root" {
+test "exactRoot" {
     const eight: i128 = 8;
-    try testing.expect(comptime exact_root(eight, 3) == 2);
-    try testing.expect(comptime exact_root(eight, 2) == null);
+    try testing.expect(comptime exactRoot(eight, 3) == 2);
+    try testing.expect(comptime exactRoot(eight, 2) == null);
     const big_square: i128 = (1 << 22) * 9;
-    try testing.expect(comptime exact_root(big_square, 2) == (1 << 11) * 3);
-    try testing.expect(comptime exact_root(big_square + 1, 2) == null);
+    try testing.expect(comptime exactRoot(big_square, 2) == (1 << 11) * 3);
+    try testing.expect(comptime exactRoot(big_square + 1, 2) == null);
 }
 
 fn distinctPrimeFactorCount(number: comptime_int) comptime_int {
