@@ -30,7 +30,7 @@ test "distinctPrimeFactorCount" {
 const Factor = struct { prime: comptime_int, power: Fraction };
 
 fn primeFactorization(number: comptime_int) [distinctPrimeFactorCount(number)]Factor {
-    const factorization: [distinctPrimeFactorCount(number)]Factor = undefined;
+    comptime var factorization: [distinctPrimeFactorCount(number)]Factor = undefined;
     comptime var remaining = number;
     comptime var p = 2;
     comptime var i = 0;
