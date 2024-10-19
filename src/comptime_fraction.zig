@@ -1,7 +1,7 @@
 const std = @import("std");
 const testing = std.testing;
 
-const ComptimeFraction = struct {
+pub const ComptimeFraction = struct {
     numerator: comptime_int,
     denominator: comptime_int,
     const Self = @This();
@@ -25,7 +25,9 @@ const ComptimeFraction = struct {
     }
 
     pub fn eq(self: Self, other: Self) bool {
-        return self.numerator == other.numerator and self.denominator == other.denominator;
+        const same_top = self.numerator == other.numerator;
+        const same_bottom = self.denominator == other.denominator;
+        return same_top and same_bottom;
     }
 
     pub fn neg(self: Self) Self {
@@ -92,6 +94,8 @@ test "eq" {
     try testing.expect(half.eq(half));
     const third = ComptimeFraction.init(1, 3);
     try testing.expect(!half.eq(third));
+    const one = ComptimeFraction.fromInt(1);
+    try testing.expect(one.eq(one));
 }
 
 test "neg" {

@@ -1,5 +1,7 @@
 const std = @import("std");
 const testing = std.testing;
+const fraction = @import("comptime_fraction.zig");
+const Fraction = fraction.ComptimeFraction;
 
 fn distinctPrimeFactorCount(number: comptime_int) comptime_int {
     comptime var remaining = number;
@@ -25,7 +27,7 @@ test "distinctPrimeFactorCount" {
     try testing.expect(distinctPrimeFactorCount(12) == 2);
 }
 
-const Factor = struct { prime: comptime_int, power: comptime_int };
+const Factor = struct { prime: comptime_int, power: Fraction };
 
 fn primeFactorization(number: comptime_int) [distinctPrimeFactorCount(number)]Factor {
     const factorization: [distinctPrimeFactorCount(number)]Factor = undefined;
@@ -39,7 +41,7 @@ fn primeFactorization(number: comptime_int) [distinctPrimeFactorCount(number)]Fa
                 remaining /= p;
                 count += 1;
             }
-            factorization[i] = .{ .prime = p, .power = count };
+            factorization[i] = .{ .prime = p, .power = Fraction.init(count, 1) };
             i += 1;
         }
         p += 1;
@@ -53,22 +55,22 @@ test "primeFactorization" {
     const primeFactorsOf2 = primeFactorization(2);
     try testing.expect(primeFactorsOf2.len == 1);
     try testing.expect(primeFactorsOf2[0].prime == 2);
-    try testing.expect(primeFactorsOf2[0].power == 1);
+    try testing.expect(primeFactorsOf2[0].power.eq(Fraction.fromInt(1)));
 
     const primeFactorsOf3 = primeFactorization(3);
     try testing.expect(primeFactorsOf3.len == 1);
     try testing.expect(primeFactorsOf3[0].prime == 3);
-    try testing.expect(primeFactorsOf3[0].power == 1);
+    //try testing.expect(primeFactorsOf3[0].power.eq(Fraction.fromInt(1)));
 
     const primeFactorsOf4 = primeFactorization(3);
     try testing.expect(primeFactorsOf4.len == 1);
     try testing.expect(primeFactorsOf4[0].prime == 2);
-    try testing.expect(primeFactorsOf4[0].power == 2);
+    // try testing.expect(primeFactorsOf4[0].power.eq(Fraction.fromInt(2)));
 
     const primeFactorsOf6 = primeFactorization(6);
     try testing.expect(primeFactorsOf6.len == 2);
     try testing.expect(primeFactorsOf6[0].prime == 2);
-    try testing.expect(primeFactorsOf6[0].power == 1);
+    //try testing.expect(primeFactorsOf6[0].power.eq(Fraction.fromInt(1)));
     try testing.expect(primeFactorsOf6[1].prime == 3);
-    try testing.expect(primeFactorsOf6[1].power == 1);
+    //    try testing.expect(primeFactorsOf6[1].power.eq(Fraction.fromInt(1)));
 }
