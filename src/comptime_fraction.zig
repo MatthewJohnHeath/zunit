@@ -20,6 +20,10 @@ const ComptimeFraction = struct {
         };
     }
 
+    pub fn fromInt(n: comptime_int) Self {
+        return init(n, 1);
+    }
+
     pub fn eq(self: Self, other: Self) bool {
         return self.numerator == other.numerator and self.denominator == other.denominator;
     }
@@ -52,7 +56,7 @@ const ComptimeFraction = struct {
         return self.mul(other.reciprocal());
     }
 
-    pub fn to_float(comptime self: Self) comptime_float {
+    pub fn toFloat(comptime self: Self) comptime_float {
         const numerator: comptime_float = @floatFromInt(self.numerator);
         const denominator: comptime_float = @floatFromInt(self.denominator);
         return numerator / denominator;
@@ -75,6 +79,12 @@ test "init" {
     const minus_half = ComptimeFraction.init(1 << 10, -1 << 11);
     try testing.expect(minus_half.numerator == -1);
     try testing.expect(minus_half.denominator == 2);
+}
+
+test "fromInt" {
+    const five = ComptimeFraction.fromInt(5);
+    try testing.expect(five.numerator == 5);
+    try testing.expect(five.denominator == 1);
 }
 
 test "eq" {
@@ -141,32 +151,8 @@ test "div" {
     try testing.expect(quarter.div(three_halves).eq(sixth));
 }
 
-test "to_float" {
+test "toFloat" {
     const third = ComptimeFraction.init(1, 3);
     const point_three_recurring: comptime_float = 1.0 / 3.0;
-    try testing.expect(third.to_float() == point_three_recurring);
-}
-
-fn distinctPrimeFactorCount(number: comptime_int) comptime_int {
-    comptime var remaining = number;
-    comptime var count = 0;
-    comptime var p = 2;
-    while (remaining > 1) {
-        if (remaining % p == 0) {
-            count += 1;
-            while (remaining % p == 0) {
-                remaining /= p;
-            }
-        }
-        p += 1;
-    }
-    return count;
-}
-
-test "distinctPrimeFactorCount" {
-    try testing.expect(distinctPrimeFactorCount(1) == 0);
-    try testing.expect(distinctPrimeFactorCount(2) == 1);
-    try testing.expect(distinctPrimeFactorCount(6) == 2);
-    try testing.expect(distinctPrimeFactorCount(8) == 1);
-    try testing.expect(distinctPrimeFactorCount(12) == 2);
+    try testing.expect(third.toFloat() == point_three_recurring);
 }
