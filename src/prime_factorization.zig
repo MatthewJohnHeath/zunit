@@ -60,23 +60,22 @@ test "primeFactorization" {
     const primeFactorsOf2 = primeFactorization(2);
     try testing.expect(primeFactorsOf2.len == 1);
     try testing.expect(primeFactorsOf2[0].prime == 2);
-    try testing.expect(primeFactorsOf2[0].power.numerator == 2);
-    // try testing.expect(primeFactorsOf2[0].power.eq(Fraction.fromInt(1)));
+    try testing.expect(primeFactorsOf2[0].power.eq(Fraction.fromInt(1)));
 
-    //     const primeFactorsOf3 = primeFactorization(3);
-    //     try testing.expect(primeFactorsOf3.len == 1);
-    //     try testing.expect(primeFactorsOf3[0].prime == 3);
-    //     //try testing.expect(primeFactorsOf3[0].power.eq(Fraction.fromInt(1)));
+    const primeFactorsOf3 = primeFactorization(3);
+    try testing.expect(primeFactorsOf3.len == 1);
+    try testing.expect(primeFactorsOf3[0].prime == 3);
+    try testing.expect(primeFactorsOf3[0].power.eq(Fraction.fromInt(1)));
 
-    //     const primeFactorsOf4 = primeFactorization(3);
-    //     try testing.expect(primeFactorsOf4.len == 1);
-    //     try testing.expect(primeFactorsOf4[0].prime == 2);
-    //     // try testing.expect(primeFactorsOf4[0].power.eq(Fraction.fromInt(2)));
+    const primeFactorsOf4 = primeFactorization(3);
+    try testing.expect(primeFactorsOf4.len == 1);
+    try testing.expect(primeFactorsOf4[0].prime == 3);
+    try testing.expect(primeFactorsOf4[0].power.eq(Fraction.fromInt(1)));
 
-    //     const primeFactorsOf6 = primeFactorization(6);
-    //     try testing.expect(primeFactorsOf6.len == 2);
-    //     try testing.expect(primeFactorsOf6[0].prime == 2);
-    //     //try testing.expect(primeFactorsOf6[0].power.eq(Fraction.fromInt(1)));
-    //     try testing.expect(primeFactorsOf6[1].prime == 3);
-    //     //    try testing.expect(primeFactorsOf6[1].power.eq(Fraction.fromInt(1)));
+    const primeFactorsOf6 = primeFactorization(6);
+    try testing.expect(primeFactorsOf6.len == 2);
+    try testing.expect(primeFactorsOf6[0].prime == 2);
+    try testing.expect(primeFactorsOf6[0].power.eq(Fraction.fromInt(1)));
+    try testing.expect(primeFactorsOf6[1].prime == 3);
+    try testing.expect(primeFactorsOf6[1].power.eq(Fraction.fromInt(1)));
 }
