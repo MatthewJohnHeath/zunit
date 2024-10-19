@@ -99,6 +99,15 @@ pub const PrimeFactorization = struct {
         }
         return true;
     }
+
+    pub fn reciprocal(self: Self) Self {
+        var factors: [self.factors.len]Factor = undefined;
+        for (0..self.factors.len) |i| {
+            const factor = self.factors[i];
+            factors[i] = Factor{ .prime = factor.prime, .power = factor.power.neg() };
+        }
+        return Self{ .factors = &factors };
+    }
 };
 
 test "PrimeFactorization.fromInt" {
@@ -110,11 +119,25 @@ test "PrimeFactorization.fromInt" {
     try testing.expect(primeFactorsOf6[1].prime == 3);
     try testing.expect(primeFactorsOf6[1].power.eq(Fraction.fromInt(1)));
 }
+
 test "PrimeFactorization.eq" {
     comptime {
         const sixFactorization = PrimeFactorization.fromInt(6);
         try testing.expect(sixFactorization.eq(sixFactorization));
         const tenFactorization = PrimeFactorization.fromInt(10);
         try testing.expect(!sixFactorization.eq(tenFactorization));
+    }
+}
+
+test "PrimeFactorization.reciprocal" {
+    comptime {
+        const sixFactorization = PrimeFactorization.fromInt(6);
+        const oneSixth = PrimeFactorization{
+            .factors = &[_]Factor{
+                Factor{ .prime = 2, .power = Fraction.fromInt(-1) },
+                Factor{ .prime = 3, .power = Fraction.fromInt(-1) },
+            },
+        };
+        try testing.expect(sixFactorization.reciprocal().eq(oneSixth));
     }
 }
