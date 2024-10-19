@@ -111,8 +111,10 @@ test "PrimeFactorization.fromInt" {
     try testing.expect(primeFactorsOf6[1].power.eq(Fraction.fromInt(1)));
 }
 test "PrimeFactorization.eq" {
-    const sixFactorization = PrimeFactorization.fromInt(6);
-    try testing.expect(sixFactorization.eq(sixFactorization));
-    const tenFactorization = PrimeFactorization.fromInt(10);
-    try testing.expect(!sixFactorization.eq(tenFactorization));
+    comptime {
+        const sixFactorization = PrimeFactorization.fromInt(6);
+        try testing.expect(sixFactorization.eq(sixFactorization));
+        const tenFactorization = PrimeFactorization.fromInt(10);
+        try testing.expect(!sixFactorization.eq(tenFactorization));
+    }
 }
