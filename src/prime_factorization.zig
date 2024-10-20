@@ -81,39 +81,41 @@ test "primeFactorization" {
     try testing.expect(primeFactorsOf6[1].power.eq(Fraction.fromInt(1)));
 }
 
-pub const Factorization = struct {
-    factors: []const Factor(comptime_int),
-    const Self = @This();
-    pub fn fromInt(n: comptime_int) Self {
-        return Self{ .factors = &primeFactorization(n) };
-    }
-    pub fn eq(comptime self: Self, comptime other: Self) bool {
-        if (self.factors.len != other.factors.len) {
-            return false;
+pub fn Factorization(Type: type) type {
+    return struct {
+        factors: []const Factor(Type),
+        const Self = @This();
+        pub fn fromInt(n: comptime_int) Self {
+            return Self{ .factors = &primeFactorization(n) };
         }
-        for (self.factors, other.factors) |s, o| {
-            if (s.base != o.base) {
+        pub fn eq(comptime self: Self, comptime other: Self) bool {
+            if (self.factors.len != other.factors.len) {
                 return false;
             }
-            if (!s.power.eq(o.power)) {
-                return false;
+            for (self.factors, other.factors) |s, o| {
+                if (s.base != o.base) {
+                    return false;
+                }
+                if (!s.power.eq(o.power)) {
+                    return false;
+                }
             }
+            return true;
         }
-        return true;
-    }
 
-    pub fn reciprocal(self: Self) Self {
-        var factors: [self.factors.len]Factor(comptime_int) = undefined;
-        for (0..self.factors.len) |i| {
-            const factor = self.factors[i];
-            factors[i] = Factor(comptime_int){ .base = factor.base, .power = factor.power.neg() };
+        pub fn reciprocal(self: Self) Self {
+            var factors: [self.factors.len]Factor(Type) = undefined;
+            for (0..self.factors.len) |i| {
+                const factor = self.factors[i];
+                factors[i] = Factor(Type){ .base = factor.base, .power = factor.power.neg() };
+            }
+            return Self{ .factors = &factors };
         }
-        return Self{ .factors = &factors };
-    }
-};
+    };
+}
 
-test "PrimeFactorization.fromInt" {
-    const sixFactorization = Factorization.fromInt(6);
+test "Factorization.fromInt" {
+    const sixFactorization = Factorization(comptime_int).fromInt(6);
     const primeFactorsOf6 = sixFactorization.factors;
     try testing.expect(primeFactorsOf6.len == 2);
     try testing.expect(primeFactorsOf6[0].base == 2);
@@ -122,19 +124,19 @@ test "PrimeFactorization.fromInt" {
     try testing.expect(primeFactorsOf6[1].power.eq(Fraction.fromInt(1)));
 }
 
-test "PrimeFactorization.eq" {
+test "Factorization.eq" {
     comptime {
-        const sixFactorization = Factorization.fromInt(6);
+        const sixFactorization = Factorization(comptime_int).fromInt(6);
         try testing.expect(sixFactorization.eq(sixFactorization));
-        const tenFactorization = Factorization.fromInt(10);
+        const tenFactorization = Factorization(comptime_int).fromInt(10);
         try testing.expect(!sixFactorization.eq(tenFactorization));
     }
 }
 
-test "PrimeFactorization.reciprocal" {
+test "Factorization.reciprocal" {
     comptime {
-        const sixFactorization = Factorization.fromInt(6);
-        const oneSixth = Factorization{
+        const sixFactorization = Factorization(comptime_int).fromInt(6);
+        const oneSixth = Factorization(comptime_int){
             .factors = &[_]Factor(comptime_int){
                 Factor(comptime_int){ .base = 2, .power = Fraction.fromInt(-1) },
                 Factor(comptime_int){ .base = 3, .power = Fraction.fromInt(-1) },
