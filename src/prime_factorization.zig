@@ -30,13 +30,13 @@ test "distinctPrimeFactorCount" {
 fn Factor(BaseType: type) type {
     return struct { base: BaseType, power: Fraction };
 }
-fn primeFactorization(number: comptime_int) [distinctPrimeFactorCount(number)]Factor(comptime_int) {
+fn primeFactorization(number: anytype) [distinctPrimeFactorCount(number)]Factor(@TypeOf(number)) {
     const size = distinctPrimeFactorCount(number);
     if (size == 0) {
         return .{};
     }
 
-    comptime var factorization: [size]Factor(comptime_int) = undefined;
+    comptime var factorization: [size]Factor(@TypeOf(number)) = undefined;
     comptime var remaining = number;
     comptime var p = 2;
     comptime var i = 0;
