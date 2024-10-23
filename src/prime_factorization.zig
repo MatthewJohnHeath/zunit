@@ -148,7 +148,7 @@ pub fn Factorization(Type: type, less: fn (lhs: Type, rhs: T) bool, eq: fn (lhs:
                     }
                 }
             }
-                    return Self{.factors = &factors[0..count];}
+                    return Self{.factors = &factors[0..count]};
         }
         
         fn div(self: Self, other: Self) Self{
