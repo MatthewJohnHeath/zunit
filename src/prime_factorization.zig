@@ -81,7 +81,26 @@ test "primeFactorization" {
     try testing.expect(primeFactorsOf6[1].power.eq(Fraction.fromInt(1)));
 }
 
-pub fn Factorization(Type: type, less: fn (lhs: Type, rhs: Type) bool, eq: fn (lhs: Type, rhs: Type) bool) type {
+const befores = struct {
+    fn number(lhs : anytype, rhs : anytype) bool{
+        return lhs < rhs;
+    }
+
+    fn string( first: []const u8,  second: []const u8) bool {
+    const smaller_length = @min(first.len, second.len);
+    for (first[0..smaller_length], second[0..smaller_length]) |f, s| {
+        if (f < s) {
+            return true;
+        }
+        if (s < f) {
+            return false;
+        }
+    }
+    return first.len < second.len;
+}
+};
+
+pub fn Factorization(Type: type, before: fn (lhs: Type, rhs: Type) bool, eq: fn (lhs: Type, rhs: Type) bool) type {
     return struct {
         factors: []const Factor(Type),
         const Self = @This();
@@ -137,7 +156,7 @@ pub fn Factorization(Type: type, less: fn (lhs: Type, rhs: Type) bool, eq: fn (l
                         }
                         self_index += 1;
                         other_index += 1;
-                    } else if (less(self_base, other_base)) {
+                    } else if (before(self_base, other_base)) {
                         factors[count] = self.factors[self_index];
                         self_index += 1;
                         count += 1;
@@ -154,6 +173,18 @@ pub fn Factorization(Type: type, less: fn (lhs: Type, rhs: Type) bool, eq: fn (l
         fn div(self: Self, other: Self) Self {
             return self.mul(other.reciprocal());
         }
+
+        fn pow(self:Self, exponent: Fraction){
+            if(exponent.eq(Fraction.fromInt(0))){
+                return Self(.factors = &[]);
+            }
+            var factors » self.factors;
+            for(0..factors.len)|i|{
+                const factor = factor[i];
+                factors[i] = Self{.base = factor.base, .power = factor.power.mul(exponent)};
+            }
+            return Self{.factors = &factors};
+        } 
     };
 }
 
