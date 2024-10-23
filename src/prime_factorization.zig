@@ -81,11 +81,11 @@ test "primeFactorization" {
     try testing.expect(primeFactorsOf6[1].power.eq(Fraction.fromInt(1)));
 }
 
-pub fn Factorization(Type: type, less: fn (lhs: Type, rhs: T) bool, eq: fn (lhs: Type, rhs: T) bool) type {
+pub fn Factorization(Type: type, less: fn (lhs: Type, rhs: Type) bool, eq: fn (lhs: Type, rhs: Type) bool) type {
     return struct {
         factors: []const Factor(Type),
         const Self = @This();
-        pub fn eq(comptime self: Self, comptime other: Self) bool {
+        pub fn eql(comptime self: Self, comptime other: Self) bool {
             if (self.factors.len != other.factors.len) {
                 return false;
             }
@@ -128,7 +128,7 @@ pub fn Factorization(Type: type, less: fn (lhs: Type, rhs: T) bool, eq: fn (lhs:
                     const self_power = self.factors[self_index].power;
                     const other_base = other.factors[other_index].base;
                     const other_power = other.factors[other_index].power;
-             
+
                     if (eq(self_base, other_base)) {
                         const sum = self_power.add(other_power);
                         if (!sum.eq(Fraction.formInt(0))) {
@@ -148,15 +148,14 @@ pub fn Factorization(Type: type, less: fn (lhs: Type, rhs: T) bool, eq: fn (lhs:
                     }
                 }
             }
-                    return Self{.factors = &factors[0..count]};
+            return Self{ .factors = &factors[0..count] };
         }
-        
-        fn div(self: Self, other: Self) Self{
+
+        fn div(self: Self, other: Self) Self {
             return self.mul(other.reciprocal());
         }
     };
-
-};
+}
 
 // test "Factorization.fromInt" {
 //     const sixFactorization = Factorization(comptime_int).fromInt(6);
