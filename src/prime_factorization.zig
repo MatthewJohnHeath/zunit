@@ -173,9 +173,44 @@ pub fn Factorization(Type: type, before: fn (lhs: Type, rhs: Type) bool, eq: fn 
             return true;
         }
 
+        fn mulSize(self: Self, other: Self) comptime_int{
+            var self_index = 0;
+            var other_index = 0;
+            var count = 0;
+            while (self_index < self.factors.len or other_index < other.factors.len) {
+                if (self_index == self.factors.len) {
+                    other_index += 1;
+                    count += 1;
+                } else if (other_index == other.factors.len) {
+                    self_index += 1;
+                    count += 1;
+                } else {
+                    const self_base = self.factors[self_index].base;
+                    const self_power = self.factors[self_index].power;
+                    const other_base = other.factors[other_index].base;
+                    const other_power = other.factors[other_index].power;
 
-        fn mul(self: Self, other: Self) Self {
-            var factors: Type[self.factors.len + other.factors.len] = undefined;
+                    if (eq(self_base, other_base)) {
+                        const sum = self_power.add(other_power);
+                        if (!sum.eq(Fraction.fromInt(0))) {
+                            count += 1;
+                        }
+                        self_index += 1;
+                        other_index += 1;
+                    } else if (before(self_base, other_base)) {
+                        self_index += 1;
+                        count += 1;
+                    } else {
+                        other_index += 1;
+                        count += 1;
+                    }
+                }
+            }
+            return count;           
+        }
+
+        pub fn mul(self: Self, other: Self) Self {
+            var factors: [self.mulSize(other)]Factor(Type) = undefined;
             var self_index = 0;
             var other_index = 0;
             var count = 0;
@@ -213,7 +248,7 @@ pub fn Factorization(Type: type, before: fn (lhs: Type, rhs: Type) bool, eq: fn 
                     }
                 }
             }
-            return Self{ .factors = &factors[0..count] };
+            return Self{ .factors = &factors };
         }
 
         pub fn reciprocal(self: Self) Self {
@@ -241,6 +276,9 @@ pub fn Factorization(Type: type, before: fn (lhs: Type, rhs: Type) bool, eq: fn 
 
 const ComptimeIntFactorization 
     = Factorization(comptime_int, NumberCompare(comptime_int).before, NumberCompare(comptime_int).eql);
+const oneInPrimes = ComptimeIntFactorization{
+    .factors = &.{},
+};
 const twoInPrimes = ComptimeIntFactorization{
     .factors = &.{.{.base = 2, .power = Fraction.fromInt(1)}},
 };
@@ -259,6 +297,37 @@ const tenthInPrimes = ComptimeIntFactorization{
 const rootTenInPrimes = ComptimeIntFactorization{
     .factors = &.{.{.base = 2, .power = Fraction.init(1,2)}, .{.base = 5, .power = Fraction.init(1,2)}},
 };
+const tenRootTenInPrimes = ComptimeIntFactorization{
+    .factors = &.{.{.base = 2, .power = Fraction.init(3,2)}, .{.base = 5, .power = Fraction.init(3,2)}},
+};
+
+test "Factorization eql" {
+    comptime{
+        try testing.expect(twoInPrimes.eql(twoInPrimes));
+        try testing.expect(!twoInPrimes.eql(tenInPrimes));
+    }
+}
+
+test "Factorization mul" {
+    comptime{
+        try testing.expect(twoInPrimes.mul(fiveInPrimes).eql(tenInPrimes));
+        try testing.expect(rootTenInPrimes.mul(tenRootTenInPrimes).eql(oneHundredInPrimes));
+    }
+}
+
+test "Factorization div" {
+    comptime{
+        try testing.expect(tenInPrimes.div(fiveInPrimes).eql(twoInPrimes));
+        try testing.expect(oneHundredInPrimes.div(tenRootTenInPrimes).eql(rootTenInPrimes));
+    }
+}
+
+test "Factorization reciprocal" {
+    comptime {
+        try testing.expect(tenInPrimes.reciprocal().eql(tenthInPrimes));
+        try testing.expect(tenthInPrimes.reciprocal().eql(tenInPrimes));
+    }
+}
 
 // test "Factorization.fromInt" {
 //     const sixFactorization = Factorization(comptime_int).fromInt(6);
@@ -269,18 +338,3 @@ const rootTenInPrimes = ComptimeIntFactorization{
 //     try testing.expect(primeFactorsOf6[1].base == 3);
 //     try testing.expect(primeFactorsOf6[1].power.eq(Fraction.fromInt(1)));
 // }
-
-
-test "Factorization eql" {
-    comptime{
-        try testing.expect(twoInPrimes.eql(twoInPrimes));
-        try testing.expect(!twoInPrimes.eql(tenInPrimes));
-    }
-}
-
-test "Factorization.reciprocal" {
-    comptime {
-        try testing.expect(tenInPrimes.reciprocal().eql(tenthInPrimes));
-        try testing.expect(tenthInPrimes.reciprocal().eql(tenInPrimes));
-    }
-}
