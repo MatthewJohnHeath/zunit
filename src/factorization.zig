@@ -84,6 +84,10 @@ fn Factorization(Type: type, before: fn (lhs: Type, rhs: Type) bool, eq: fn (lhs
     return struct {
         factors: []const Factor(Type),
         const Self = @This();
+        pub fn fromBase(base : Type) Self{
+            return .{.factors = .{.{.base = base, .power = Fraction.fromInt(1)}}};
+        }
+
         pub fn eql(comptime self: Self, comptime other: Self) bool {
             if (self.factors.len != other.factors.len) {
                 return false;
