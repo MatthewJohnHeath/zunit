@@ -101,20 +101,48 @@ const befores = struct {
 
 };
 
-test "befores.number" {
+test "befores" {
     try testing.expect(befores.number(1,2));
-    try testing.expect(befores.number(1.0,2.0));
     try testing.expect(befores.number(1.0,2.0));
     try testing.expect(!befores.number(2,1));
     try testing.expect(!befores.number(1.0,1.0));
-}
 
-test "befores.string" {
     try testing.expect(befores.string("aa","ab"));
     try testing.expect(befores.string("a","aa"));
     try testing.expect(befores.string("","aa"));
     try testing.expect(!befores.string("ab","aa"));
     try testing.expect(!befores.string("aa","aa"));
+}
+
+const eqs = struct {
+    fn number(lhs : anytype, rhs : anytype) bool{
+        return lhs == rhs;
+    }
+
+    fn string( first: []const u8,  second: []const u8) bool {
+        if(first.len != second.len){
+            return false;
+        }
+        
+        for (first, second) |f, s| {
+            if (f != s) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+};
+
+test "eqs" {
+    try testing.expect(eqs.number(1,1));
+    try testing.expect(eqs.number(1.0,1.0));
+    try testing.expect(!eqs.number(2,1));
+
+    try testing.expect(eqs.string("aa","aa"));
+    try testing.expect(eqs.string("",""));
+    try testing.expect(!eqs.string("a",""));
+    try testing.expect(!eqs.string("a","b"));
 }
 
 pub fn Factorization(Type: type, before: fn (lhs: Type, rhs: Type) bool, eq: fn (lhs: Type, rhs: Type) bool) type {
@@ -214,6 +242,7 @@ pub fn Factorization(Type: type, before: fn (lhs: Type, rhs: Type) bool, eq: fn 
 //     try testing.expect(primeFactorsOf6[1].base == 3);
 //     try testing.expect(primeFactorsOf6[1].power.eq(Fraction.fromInt(1)));
 // }
+
 
 // test "Factorization.eq" {
 //     comptime {
