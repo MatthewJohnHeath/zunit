@@ -153,8 +153,7 @@ test "string_compare before"{
     try testing.expect(!string_compare.before("aa","aa"));
 }
 
-
-pub fn Factorization(Type: type, before: fn (lhs: Type, rhs: Type) bool, eq: fn (lhs: Type, rhs: Type) bool) type {
+fn Factorization(Type: type, before: fn (lhs: Type, rhs: Type) bool, eq: fn (lhs: Type, rhs: Type) bool) type {
     return struct {
         factors: []const Factor(Type),
         const Self = @This();
@@ -255,11 +254,11 @@ pub fn Factorization(Type: type, before: fn (lhs: Type, rhs: Type) bool, eq: fn 
             return self.pow(Fraction.fromInt(-1));
         }
 
-        fn div(self: Self, other: Self) Self {
+        pub fn div(self: Self, other: Self) Self {
             return self.mul(other.reciprocal());
         }
 
-        fn pow(self:Self, exponent: Fraction)Self{
+        pub fn pow(self:Self, exponent: Fraction)Self{
             if(exponent.eq(Fraction.fromInt(0))){
                 return Self{.factors = &.{}};
             }
@@ -271,11 +270,11 @@ pub fn Factorization(Type: type, before: fn (lhs: Type, rhs: Type) bool, eq: fn 
             return Self{.factors = &factors};
         } 
 
-        fn powi(self:Self, exponent: comptime_int)Self{
+        pub fn powi(self:Self, exponent: comptime_int)Self{
             return self.pow(Fraction.fromInt(exponent));
         } 
 
-        fn root(self:Self, root_power: comptime_int)Self{
+        pub fn root(self:Self, root_power: comptime_int)Self{
             return self.pow(Fraction.fromInt(root_power).reciprocal());
         } 
 
