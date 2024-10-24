@@ -228,7 +228,25 @@ pub fn Factorization(Type: type, before: fn (lhs: Type, rhs: Type) bool, eq: fn 
     };
 }
 
-const ComptimeIntFacorization = Factorization(comptime_int, befoes.number, eqs.number);
+const ComptimeIntFactorization = Factorization(comptime_int, befores.number, eqs.number);
+const twoInPrimes = ComptimeIntFactorization{
+    .factors = &.{.{2, Fraction.fromInt(1)}},
+};
+const fiveInPrimes = ComptimeIntFactorization{
+    .factors = &.{.{5, Fraction.fromInt(1)}},
+};
+const tenInPrimes = ComptimeIntFactorization{
+    .factors = &.{.{2, Fraction.fromInt(1)}, .{5, Fraction.fromInt(1)}},
+};
+const oneHundredInPrimes = ComptimeIntFactorization{
+    .factors = &.{.{2, Fraction.fromInt(2)}, .{5, Fraction.fromInt(2)}},
+};
+const tenthInPrimes = ComptimeIntFactorization{
+    .factors = &.{.{2, Fraction.fromInt(-1)}, .{5, Fraction.fromInt(-1)}},
+};
+const rootTenInPrimes = ComptimeIntFactorization{
+    .factors = &.{.{2, Fraction.init(1,2)}, .{5, Fraction.init(1,2)}},
+};
 
 // test "Factorization.fromInt" {
 //     const sixFactorization = Factorization(comptime_int).fromInt(6);
@@ -241,14 +259,10 @@ const ComptimeIntFacorization = Factorization(comptime_int, befoes.number, eqs.n
 // }
 
 
-// test "Factorization.eq" {
-//     comptime {
-//         const sixFactorization = Factorization(comptime_int).fromInt(6);
-//         try testing.expect(sixFactorization.eq(sixFactorization));
-//         const tenFactorization = Factorization(comptime_int).fromInt(10);
-//         try testing.expect(!sixFactorization.eq(tenFactorization));
-//     }
-// }
+test "Factorization eq" {
+    try testing.expect(twoInPrimes.eq(twoInPrimes));
+    try testing.expect(!twoInPrimes.eq(tenInPrimes));
+}
 
 // test "Factorization.reciprocal" {
 //     comptime {
