@@ -353,3 +353,14 @@ test "primeFactorization" {
         try testing.expect(primeFactorization(100).eql(oneHundredInPrimes));
     }
 }
+
+pub fn fractionInPrimes(frac: Fraction)ComptimeIntFactorization{
+    return primeFactorization(frac.numerator).div(primeFactorization(frac.denominator));
+}
+
+test "fractionInPrimes" {
+    comptime{
+        try testing.expect(fractionInPrimes(Fraction.init(1,10)).eql(tenthInPrimes));
+
+    }
+}
