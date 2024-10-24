@@ -2,6 +2,7 @@ const std = @import("std");
 const testing = std.testing;
 const fraction = @import("comptime_fraction.zig");
 const compare = @import("compare.zig");
+
 const NumberCompare = compare.NumberCompare;
 const Fraction = fraction.ComptimeFraction;
 
@@ -13,6 +14,8 @@ fn Factorization(Type: type, before: fn (lhs: Type, rhs: Type) bool, eq: fn (lhs
     return struct {
         factors: []const Factor(Type),
         const Self = @This();
+
+        const one = Self{ .factors = &.{} };
 
         pub fn fromBase(base: Type) Self {
             return .{ .factors = &.{.{ .base = base, .power = Fraction.fromInt(1) }} };
@@ -31,6 +34,10 @@ fn Factorization(Type: type, before: fn (lhs: Type, rhs: Type) bool, eq: fn (lhs
                 }
             }
             return true;
+        }
+
+        pub fn isOne(self: Self) bool {
+            return self.eql(one);
         }
 
         fn mulSize(self: Self, other: Self) comptime_int {
@@ -141,7 +148,7 @@ fn Factorization(Type: type, before: fn (lhs: Type, rhs: Type) bool, eq: fn (lhs
     };
 }
 
-const ComptimeIntFactorization = Factorization(comptime_int, NumberCompare(comptime_int).before, NumberCompare(comptime_int).eql);
+pub const ComptimeIntFactorization = Factorization(comptime_int, NumberCompare(comptime_int).before, NumberCompare(comptime_int).eql);
 const oneInPrimes = ComptimeIntFactorization{
     .factors = &.{},
 };
@@ -174,6 +181,13 @@ test "Factorization eql" {
     comptime {
         try testing.expect(twoInPrimes.eql(twoInPrimes));
         try testing.expect(!twoInPrimes.eql(tenInPrimes));
+    }
+}
+
+test "Factorization isOne" {
+    comptime {
+        try testing.expect(oneInPrimes.isOne());
+        try testing.expect(!twoInPrimes.isOne());
     }
 }
 

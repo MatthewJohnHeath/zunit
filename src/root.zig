@@ -30,6 +30,22 @@ fn Quantity(comptime ScalarType: type, comptime base: BaseUnitProduct, comptime 
             return this.value == other.value;
         }
 
+        pub fn lt(this: Self, other: Self) bool {
+            return this.value < other.value;
+        }
+
+        pub fn gt(this: Self, other: Self) bool {
+            return other.lt(this);
+        }
+
+        pub fn le(this: Self, other: Self) bool {
+            return !this.gt(other);
+        }
+
+        pub fn ge(this: Self, other: Self) bool {
+            return !this.lt(other);
+        }
+
         pub fn neg(this: Self) Self {
             return Self{
                 .value = -this.value,
@@ -103,8 +119,16 @@ fn Quantity(comptime ScalarType: type, comptime base: BaseUnitProduct, comptime 
     };
 }
 
-pub fn BaseQuantity(name : []const u8, Type : type){
+pub fn BaseQuantity(name: []const u8, Type: type) type {
     return Quantity(Type, BaseUnitProduct.fromBase(name), PrimePowerFactors.one, FloatFactors.one);
+}
+
+pub fn FractionPrefix(prefix: Fraction, Type: type) type {
+    return Quantity(Type, BaseUnitProduct.one, PrimePowerFactors.fromBase(prefix), FloatFactors.one);
+}
+
+pub fn FloatPrefix(prefix: comptime_float, Type: type) type {
+    return Quantity(Type, BaseUnitProduct.one, PrimePowerFactors.fone, FloatFactors.romBase(prefix));
 }
 
 // test "eq" {
