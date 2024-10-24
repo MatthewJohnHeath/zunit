@@ -318,10 +318,10 @@ test "distinctPrimeFactorCount" {
     try testing.expect(distinctPrimeFactorCount(12) == 2);
 }
 
-fn primeFactorization(number: anytype) [distinctPrimeFactorCount(number)]Factor(@TypeOf(number)) {
+pub fn primeFactorization(number: comptime_int) ComptimeIntFactorization {
     const size = distinctPrimeFactorCount(number);
     if (size == 0) {
-        return .{};
+        return oneInPrimes;
     }
 
     comptime var factorization: [size]Factor(@TypeOf(number)) = undefined;
@@ -340,31 +340,16 @@ fn primeFactorization(number: anytype) [distinctPrimeFactorCount(number)]Factor(
         }
         p += 1;
     }
-    return factorization;
+    return .{.factors = &factorization};
 }
 
 test "primeFactorization" {
-    try testing.expect(primeFactorization(1).len == 0);
-
-    const primeFactorsOf2 = primeFactorization(2);
-    try testing.expect(primeFactorsOf2.len == 1);
-    try testing.expect(primeFactorsOf2[0].base == 2);
-    try testing.expect(primeFactorsOf2[0].power.eq(Fraction.fromInt(1)));
-
-    const primeFactorsOf3 = primeFactorization(3);
-    try testing.expect(primeFactorsOf3.len == 1);
-    try testing.expect(primeFactorsOf3[0].base == 3);
-    try testing.expect(primeFactorsOf3[0].power.eq(Fraction.fromInt(1)));
-
-    const primeFactorsOf4 = primeFactorization(4);
-    try testing.expect(primeFactorsOf4.len == 1);
-    try testing.expect(primeFactorsOf4[0].base == 2);
-    try testing.expect(primeFactorsOf4[0].power.eq(Fraction.fromInt(2)));
-
-    const primeFactorsOf6 = primeFactorization(6);
-    try testing.expect(primeFactorsOf6.len == 2);
-    try testing.expect(primeFactorsOf6[0].base == 2);
-    try testing.expect(primeFactorsOf6[0].power.eq(Fraction.fromInt(1)));
-    try testing.expect(primeFactorsOf6[1].base == 3);
-    try testing.expect(primeFactorsOf6[1].power.eq(Fraction.fromInt(1)));
+    comptime{
+        try testing.expect(primeFactorization(1).eql(oneInPrimes));
+        try testing.expect(primeFactorization(2).eql(twoInPrimes));
+        try testing.expect(primeFactorization(5).eql(fiveInPrimes));
+        try testing.expect(primeFactorization(8).eql(eightInPrimes));
+        try testing.expect(primeFactorization(10).eql(tenInPrimes));
+        try testing.expect(primeFactorization(100).eql(oneHundredInPrimes));
+    }
 }
