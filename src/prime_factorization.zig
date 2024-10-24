@@ -86,7 +86,7 @@ const befores = struct {
         return lhs < rhs;
     }
 
-    fn string( first: [] u8,  second: [] u8) bool {
+    fn string( first: []const u8,  second: []const u8) bool {
         const smaller_length = @min(first.len, second.len);
         for (first[0..smaller_length], second[0..smaller_length]) |f, s| {
             if (f < s) {
@@ -101,12 +101,20 @@ const befores = struct {
 
 };
 
-test "before.number" {
+test "befores.number" {
     try testing.expect(befores.number(1,2));
     try testing.expect(befores.number(1.0,2.0));
     try testing.expect(befores.number(1.0,2.0));
     try testing.expect(!befores.number(2,1));
     try testing.expect(!befores.number(1.0,1.0));
+}
+
+test "befores.string" {
+    try testing.expect(befores.string("aa","ab"));
+    try testing.expect(befores.string("a","aa"));
+    try testing.expect(befores.string("","aa"));
+    try testing.expect(!befores.string("ab","aa"));
+    try testing.expect(!befores.string("aa","aa"));
 }
 
 pub fn Factorization(Type: type, before: fn (lhs: Type, rhs: Type) bool, eq: fn (lhs: Type, rhs: Type) bool) type {
