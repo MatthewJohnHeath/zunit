@@ -81,12 +81,47 @@ test "primeFactorization" {
     try testing.expect(primeFactorsOf6[1].power.eq(Fraction.fromInt(1)));
 }
 
-const befores = struct {
-    fn number(lhs : anytype, rhs : anytype) bool{
-        return lhs < rhs;
+
+fn NumberCompare(NumberType:type) type {
+    return struct{
+        fn eql(lhs : NumberType, rhs : NumberType) bool{
+            return lhs == rhs;
+        }
+
+        fn before(lhs : NumberType, rhs : NumberType) bool{
+            return lhs < rhs;
+        }
+    };
+}
+
+test "NumberCompare eq" {
+    const compare = NumberCompare(comptime_int);
+    try testing.expect(compare.eql(1,1));
+    try testing.expect(!compare.eql(2,1));
+}
+
+test "NumberCompare before" {
+    const compare = NumberCompare(f16);
+    try testing.expect(compare.before(1.0,2.0));
+    try testing.expect(!compare.before(1.0,1.0));
+    try testing.expect(!compare.before(2.0,1.0));
+}
+
+const string_compare = struct{
+    fn eql( first: []const u8,  second: []const u8) bool {
+        if(first.len != second.len){
+            return false;
+        }
+        
+        for (first, second) |f, s| {
+            if (f != s) {
+                return false;
+            }
+        }
+        return true;
     }
 
-    fn string( first: []const u8,  second: []const u8) bool {
+    fn before( first: []const u8,  second: []const u8) bool {
         const smaller_length = @min(first.len, second.len);
         for (first[0..smaller_length], second[0..smaller_length]) |f, s| {
             if (f < s) {
@@ -101,49 +136,23 @@ const befores = struct {
 
 };
 
-test "befores" {
-    try testing.expect(befores.number(1,2));
-    try testing.expect(befores.number(1.0,2.0));
-    try testing.expect(!befores.number(2,1));
-    try testing.expect(!befores.number(1.0,1.0));
-
-    try testing.expect(befores.string("aa","ab"));
-    try testing.expect(befores.string("a","aa"));
-    try testing.expect(befores.string("","aa"));
-    try testing.expect(!befores.string("ab","aa"));
-    try testing.expect(!befores.string("aa","aa"));
+test "string_compare eq"{
+    try testing.expect(string_compare.eql("aa","aa"));
+    try testing.expect(string_compare.eql("",""));
+    try testing.expect(!string_compare.eql("aa","ab"));
+    try testing.expect(!string_compare.eql("a","aa"));
+    try testing.expect(!string_compare.eql("","aa"));
+    try testing.expect(!string_compare.eql("ab","aa"));
 }
 
-const eqs = struct {
-    fn number(lhs : anytype, rhs : anytype) bool{
-        return lhs == rhs;
-    }
-
-    fn string( first: []const u8,  second: []const u8) bool {
-        if(first.len != second.len){
-            return false;
-        }
-        
-        for (first, second) |f, s| {
-            if (f != s) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-};
-
-test "eqs" {
-    try testing.expect(eqs.number(1,1));
-    try testing.expect(eqs.number(1.0,1.0));
-    try testing.expect(!eqs.number(2,1));
-
-    try testing.expect(eqs.string("aa","aa"));
-    try testing.expect(eqs.string("",""));
-    try testing.expect(!eqs.string("a",""));
-    try testing.expect(!eqs.string("a","b"));
+test "string_compare before"{
+    try testing.expect(string_compare.before("aa","ab"));
+    try testing.expect(string_compare.before("a","aa"));
+    try testing.expect(string_compare.before("","aa"));
+    try testing.expect(!string_compare.before("ab","aa"));
+    try testing.expect(!string_compare.before("aa","aa"));
 }
+
 
 pub fn Factorization(Type: type, before: fn (lhs: Type, rhs: Type) bool, eq: fn (lhs: Type, rhs: Type) bool) type {
     return struct {
@@ -228,24 +237,25 @@ pub fn Factorization(Type: type, before: fn (lhs: Type, rhs: Type) bool, eq: fn 
     };
 }
 
-const ComptimeIntFactorization = Factorization(comptime_int, befores.number, eqs.number);
+const ComptimeIntFactorization 
+    = Factorization(comptime_int, NumberCompare(comptime_int).before, NumberCompare(comptime_int).eql);
 const twoInPrimes = ComptimeIntFactorization{
-    .factors = &.{.{2, Fraction.fromInt(1)}},
+    .factors = &.{.{.base = 2, .power = Fraction.fromInt(1)}},
 };
 const fiveInPrimes = ComptimeIntFactorization{
-    .factors = &.{.{5, Fraction.fromInt(1)}},
+    .factors = &.{.{.base = 5, .power = Fraction.fromInt(1)}},
 };
 const tenInPrimes = ComptimeIntFactorization{
-    .factors = &.{.{2, Fraction.fromInt(1)}, .{5, Fraction.fromInt(1)}},
+    .factors = &.{.{.base = 2, .power = Fraction.fromInt(1)}, .{.base = 5, .power = Fraction.fromInt(1)}},
 };
 const oneHundredInPrimes = ComptimeIntFactorization{
-    .factors = &.{.{2, Fraction.fromInt(2)}, .{5, Fraction.fromInt(2)}},
+    .factors = &.{.{.base = 2, .power = Fraction.fromInt(2)},  .{.base = 5, .power = Fraction.fromInt(2)}},
 };
 const tenthInPrimes = ComptimeIntFactorization{
-    .factors = &.{.{2, Fraction.fromInt(-1)}, .{5, Fraction.fromInt(-1)}},
+    .factors = &.{.{.base = 2, .power = Fraction.fromInt(-1)}, .{.base = 5, .power =Fraction.fromInt(-1)}},
 };
 const rootTenInPrimes = ComptimeIntFactorization{
-    .factors = &.{.{2, Fraction.init(1,2)}, .{5, Fraction.init(1,2)}},
+    .factors = &.{.{.base = 2, .power = Fraction.init(1,2)}, .{.base = 5, .power = Fraction.init(1,2)}},
 };
 
 // test "Factorization.fromInt" {
@@ -259,9 +269,11 @@ const rootTenInPrimes = ComptimeIntFactorization{
 // }
 
 
-test "Factorization eq" {
-    try testing.expect(twoInPrimes.eq(twoInPrimes));
-    try testing.expect(!twoInPrimes.eq(tenInPrimes));
+test "Factorization eql" {
+    comptime{
+        try testing.expect(twoInPrimes.eql(twoInPrimes));
+        try testing.expect(!twoInPrimes.eql(tenInPrimes));
+    }
 }
 
 // test "Factorization.reciprocal" {
