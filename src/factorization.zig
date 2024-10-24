@@ -3,82 +3,10 @@ const testing = std.testing;
 const fraction = @import("comptime_fraction.zig");
 const Fraction = fraction.ComptimeFraction;
 
-fn distinctPrimeFactorCount(number: comptime_int) comptime_int {
-    comptime var remaining = number;
-    comptime var count = 0;
-    comptime var p = 2;
-    while (remaining > 1) {
-        if (remaining % p == 0) {
-            count += 1;
-            while (remaining % p == 0) {
-                remaining /= p;
-            }
-        }
-        p += 1;
-    }
-    return count;
-}
 
-test "distinctPrimeFactorCount" {
-    try testing.expect(distinctPrimeFactorCount(1) == 0);
-    try testing.expect(distinctPrimeFactorCount(2) == 1);
-    try testing.expect(distinctPrimeFactorCount(6) == 2);
-    try testing.expect(distinctPrimeFactorCount(8) == 1);
-    try testing.expect(distinctPrimeFactorCount(12) == 2);
-}
 
 fn Factor(BaseType: type) type {
     return struct { base: BaseType, power: Fraction };
-}
-fn primeFactorization(number: anytype) [distinctPrimeFactorCount(number)]Factor(@TypeOf(number)) {
-    const size = distinctPrimeFactorCount(number);
-    if (size == 0) {
-        return .{};
-    }
-
-    comptime var factorization: [size]Factor(@TypeOf(number)) = undefined;
-    comptime var remaining = number;
-    comptime var p = 2;
-    comptime var i = 0;
-    while (i < size) {
-        comptime var count = 0;
-        while (remaining % p == 0) {
-            remaining /= p;
-            count += 1;
-        }
-        if (count > 0) {
-            factorization[i] = .{ .base = p, .power = Fraction.fromInt(count) };
-            i += 1;
-        }
-        p += 1;
-    }
-    return factorization;
-}
-
-test "primeFactorization" {
-    try testing.expect(primeFactorization(1).len == 0);
-
-    const primeFactorsOf2 = primeFactorization(2);
-    try testing.expect(primeFactorsOf2.len == 1);
-    try testing.expect(primeFactorsOf2[0].base == 2);
-    try testing.expect(primeFactorsOf2[0].power.eq(Fraction.fromInt(1)));
-
-    const primeFactorsOf3 = primeFactorization(3);
-    try testing.expect(primeFactorsOf3.len == 1);
-    try testing.expect(primeFactorsOf3[0].base == 3);
-    try testing.expect(primeFactorsOf3[0].power.eq(Fraction.fromInt(1)));
-
-    const primeFactorsOf4 = primeFactorization(4);
-    try testing.expect(primeFactorsOf4.len == 1);
-    try testing.expect(primeFactorsOf4[0].base == 2);
-    try testing.expect(primeFactorsOf4[0].power.eq(Fraction.fromInt(2)));
-
-    const primeFactorsOf6 = primeFactorization(6);
-    try testing.expect(primeFactorsOf6.len == 2);
-    try testing.expect(primeFactorsOf6[0].base == 2);
-    try testing.expect(primeFactorsOf6[0].power.eq(Fraction.fromInt(1)));
-    try testing.expect(primeFactorsOf6[1].base == 3);
-    try testing.expect(primeFactorsOf6[1].power.eq(Fraction.fromInt(1)));
 }
 
 fn NumberCompare(NumberType:type) type {
@@ -365,12 +293,78 @@ test "Factorization root" {
         try testing.expect(tenInPrimes.root(2).eql(rootTenInPrimes));
     }
 }
-// test "Factorization.fromInt" {
-//     const sixFactorization = Factorization(comptime_int).fromInt(6);
-//     const primeFactorsOf6 = sixFactorization.factors;
-//     try testing.expect(primeFactorsOf6.len == 2);
-//     try testing.expect(primeFactorsOf6[0].base == 2);
-//     try testing.expect(primeFactorsOf6[0].power.eq(Fraction.fromInt(1)));
-//     try testing.expect(primeFactorsOf6[1].base == 3);
-//     try testing.expect(primeFactorsOf6[1].power.eq(Fraction.fromInt(1)));
-// }
+
+fn distinctPrimeFactorCount(number: comptime_int) comptime_int {
+    comptime var remaining = number;
+    comptime var count = 0;
+    comptime var p = 2;
+    while (remaining > 1) {
+        if (remaining % p == 0) {
+            count += 1;
+            while (remaining % p == 0) {
+                remaining /= p;
+            }
+        }
+        p += 1;
+    }
+    return count;
+}
+
+test "distinctPrimeFactorCount" {
+    try testing.expect(distinctPrimeFactorCount(1) == 0);
+    try testing.expect(distinctPrimeFactorCount(2) == 1);
+    try testing.expect(distinctPrimeFactorCount(6) == 2);
+    try testing.expect(distinctPrimeFactorCount(8) == 1);
+    try testing.expect(distinctPrimeFactorCount(12) == 2);
+}
+
+fn primeFactorization(number: anytype) [distinctPrimeFactorCount(number)]Factor(@TypeOf(number)) {
+    const size = distinctPrimeFactorCount(number);
+    if (size == 0) {
+        return .{};
+    }
+
+    comptime var factorization: [size]Factor(@TypeOf(number)) = undefined;
+    comptime var remaining = number;
+    comptime var p = 2;
+    comptime var i = 0;
+    while (i < size) {
+        comptime var count = 0;
+        while (remaining % p == 0) {
+            remaining /= p;
+            count += 1;
+        }
+        if (count > 0) {
+            factorization[i] = .{ .base = p, .power = Fraction.fromInt(count) };
+            i += 1;
+        }
+        p += 1;
+    }
+    return factorization;
+}
+
+test "primeFactorization" {
+    try testing.expect(primeFactorization(1).len == 0);
+
+    const primeFactorsOf2 = primeFactorization(2);
+    try testing.expect(primeFactorsOf2.len == 1);
+    try testing.expect(primeFactorsOf2[0].base == 2);
+    try testing.expect(primeFactorsOf2[0].power.eq(Fraction.fromInt(1)));
+
+    const primeFactorsOf3 = primeFactorization(3);
+    try testing.expect(primeFactorsOf3.len == 1);
+    try testing.expect(primeFactorsOf3[0].base == 3);
+    try testing.expect(primeFactorsOf3[0].power.eq(Fraction.fromInt(1)));
+
+    const primeFactorsOf4 = primeFactorization(4);
+    try testing.expect(primeFactorsOf4.len == 1);
+    try testing.expect(primeFactorsOf4[0].base == 2);
+    try testing.expect(primeFactorsOf4[0].power.eq(Fraction.fromInt(2)));
+
+    const primeFactorsOf6 = primeFactorization(6);
+    try testing.expect(primeFactorsOf6.len == 2);
+    try testing.expect(primeFactorsOf6[0].base == 2);
+    try testing.expect(primeFactorsOf6[0].power.eq(Fraction.fromInt(1)));
+    try testing.expect(primeFactorsOf6[1].base == 3);
+    try testing.expect(primeFactorsOf6[1].power.eq(Fraction.fromInt(1)));
+}
