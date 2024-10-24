@@ -190,7 +190,7 @@ pub fn Factorization(Type: type, before: fn (lhs: Type, rhs: Type) bool, eq: fn 
 
                     if (eq(self_base, other_base)) {
                         const sum = self_power.add(other_power);
-                        if (!sum.eq(Fraction.formInt(0))) {
+                        if (!sum.eq(Fraction.fromInt(0))) {
                             factors[count] = Factor(Type){ .base = self_base, .power = sum };
                             count += 1;
                         }
@@ -228,7 +228,7 @@ pub fn Factorization(Type: type, before: fn (lhs: Type, rhs: Type) bool, eq: fn 
     };
 }
 
-const IntFactoization = Factorization(i)
+const ComptimeIntFacorization = Factorization(comptime_int, befoes.number, eqs.number);
 
 // test "Factorization.fromInt" {
 //     const sixFactorization = Factorization(comptime_int).fromInt(6);
