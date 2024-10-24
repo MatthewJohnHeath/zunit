@@ -103,6 +103,10 @@ fn Quantity(comptime ScalarType: type, comptime base: BaseUnitProduct, comptime 
     };
 }
 
+pub fn BaseQuantity(name : []const u8, Type : type){
+    return Quantity(Type, BaseUnitProduct.fromBase(name), PrimePowerFactors.one, FloatFactors.one);
+}
+
 // test "eq" {
 //     const F32Meter = Quantity(f32, baseUnit("meter"));
 //     const oneMeter = F32Meter.init(1.0);
