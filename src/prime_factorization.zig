@@ -329,6 +329,14 @@ test "Factorization reciprocal" {
     }
 }
 
+test "Factorization pow" {
+    comptime {
+        try testing.expect(tenInPrimes.pow(Fraction.fromInt(2)).eql(oneHundredInPrimes));
+        try testing.expect(tenInPrimes.pow(Fraction.fromInt(-1)).eql(tenthInPrimes));
+        try testing.expect(tenInPrimes.pow(Fraction.init(1,2)).eql(rootTenInPrimes));
+        try testing.expect(tenRootTenInPrimes.pow(Fraction.init(2,3)).eql(tenInPrimes));
+    }
+}
 // test "Factorization.fromInt" {
 //     const sixFactorization = Factorization(comptime_int).fromInt(6);
 //     const primeFactorsOf6 = sixFactorization.factors;
