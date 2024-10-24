@@ -86,19 +86,28 @@ const befores = struct {
         return lhs < rhs;
     }
 
-    fn string( first: []const u8,  second: []const u8) bool {
-    const smaller_length = @min(first.len, second.len);
-    for (first[0..smaller_length], second[0..smaller_length]) |f, s| {
-        if (f < s) {
-            return true;
+    fn string( first: [] u8,  second: [] u8) bool {
+        const smaller_length = @min(first.len, second.len);
+        for (first[0..smaller_length], second[0..smaller_length]) |f, s| {
+            if (f < s) {
+                return true;
+            }
+            if (s < f) {
+                return false;
+            }
         }
-        if (s < f) {
-            return false;
-        }
+        return first.len < second.len;
     }
-    return first.len < second.len;
-}
+
 };
+
+test "before.number" {
+    try testing.expect(befores.number(1,2));
+    try testing.expect(befores.number(1.0,2.0));
+    try testing.expect(befores.number(1.0,2.0));
+    try testing.expect(!befores.number(2,1));
+    try testing.expect(!befores.number(1.0,1.0));
+}
 
 pub fn Factorization(Type: type, before: fn (lhs: Type, rhs: Type) bool, eq: fn (lhs: Type, rhs: Type) bool) type {
     return struct {
@@ -174,13 +183,13 @@ pub fn Factorization(Type: type, before: fn (lhs: Type, rhs: Type) bool, eq: fn 
             return self.mul(other.reciprocal());
         }
 
-        fn pow(self:Self, exponent: Fraction){
+        fn pow(self:Self, exponent: Fraction)Self{
             if(exponent.eq(Fraction.fromInt(0))){
-                return Self(.factors = &[]);
+                return Self{.factors = &[]Factor(Type)};
             }
-            var factors » self.factors;
+            var factors = self.factors;
             for(0..factors.len)|i|{
-                const factor = factor[i];
+                const factor = factors[i];
                 factors[i] = Self{.base = factor.base, .power = factor.power.mul(exponent)};
             }
             return Self{.factors = &factors};
