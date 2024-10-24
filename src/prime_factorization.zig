@@ -165,12 +165,7 @@ pub fn Factorization(Type: type, before: fn (lhs: Type, rhs: Type) bool, eq: fn 
         }
 
         pub fn reciprocal(self: Self) Self {
-            var factors: [self.factors.len]Factor(Type) = undefined;
-            for (0..self.factors.len) |i| {
-                const factor = self.factors[i];
-                factors[i] = Factor(Type){ .base = factor.base, .power = factor.power.neg() };
-            }
-            return Self{ .factors = &factors };
+            return self.pow(Fraction.fromInt(-1));
         }
 
         fn mul(self: Self, other: Self) Self {
@@ -232,6 +227,8 @@ pub fn Factorization(Type: type, before: fn (lhs: Type, rhs: Type) bool, eq: fn 
         } 
     };
 }
+
+const IntFactoization = Factorization(i)
 
 // test "Factorization.fromInt" {
 //     const sixFactorization = Factorization(comptime_int).fromInt(6);
