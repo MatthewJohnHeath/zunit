@@ -136,7 +136,7 @@ const string_compare = struct{
 
 };
 
-test "string_compare eq"{
+test "string_compare eql"{
     try testing.expect(string_compare.eql("aa","aa"));
     try testing.expect(string_compare.eql("",""));
     try testing.expect(!string_compare.eql("aa","ab"));
@@ -173,9 +173,6 @@ pub fn Factorization(Type: type, before: fn (lhs: Type, rhs: Type) bool, eq: fn 
             return true;
         }
 
-        pub fn reciprocal(self: Self) Self {
-            return self.pow(Fraction.fromInt(-1));
-        }
 
         fn mul(self: Self, other: Self) Self {
             var factors: Type[self.factors.len + other.factors.len] = undefined;
@@ -219,6 +216,10 @@ pub fn Factorization(Type: type, before: fn (lhs: Type, rhs: Type) bool, eq: fn 
             return Self{ .factors = &factors[0..count] };
         }
 
+        pub fn reciprocal(self: Self) Self {
+            return self.pow(Fraction.fromInt(-1));
+        }
+
         fn div(self: Self, other: Self) Self {
             return self.mul(other.reciprocal());
         }
@@ -227,13 +228,14 @@ pub fn Factorization(Type: type, before: fn (lhs: Type, rhs: Type) bool, eq: fn 
             if(exponent.eq(Fraction.fromInt(0))){
                 return Self{.factors = &[]Factor(Type)};
             }
-            var factors = self.factors;
-            for(0..factors.len)|i|{
-                const factor = factors[i];
-                factors[i] = Self{.base = factor.base, .power = factor.power.mul(exponent)};
+            const len = self.factors.len;
+            var factors : [len]Factor(Type) = undefined;
+            for(0..len)|i|{
+                factors[i] = .{.base = self.factors[i].base, .power = self.factors[i].power.mul(exponent)};
             }
             return Self{.factors = &factors};
         } 
+
     };
 }
 
@@ -276,15 +278,9 @@ test "Factorization eql" {
     }
 }
 
-// test "Factorization.reciprocal" {
-//     comptime {
-//         const sixFactorization = Factorization(comptime_int).fromInt(6);
-//         const oneSixth = Factorization(comptime_int){
-//             .factors = &[_]Factor(comptime_int){
-//                 Factor(comptime_int){ .base = 2, .power = Fraction.fromInt(-1) },
-//                 Factor(comptime_int){ .base = 3, .power = Fraction.fromInt(-1) },
-//             },
-//         };
-//         try testing.expect(sixFactorization.reciprocal().eq(oneSixth));
-//     }
-//}
+test "Factorization.reciprocal" {
+    comptime {
+        try testing.expect(tenInPrimes.reciprocal().eql(tenthInPrimes));
+        try testing.expect(tenthInPrimes.reciprocal().eql(tenInPrimes));
+    }
+}
