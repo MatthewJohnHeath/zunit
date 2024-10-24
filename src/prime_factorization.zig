@@ -68,10 +68,10 @@ test "primeFactorization" {
     try testing.expect(primeFactorsOf3[0].base == 3);
     try testing.expect(primeFactorsOf3[0].power.eq(Fraction.fromInt(1)));
 
-    const primeFactorsOf4 = primeFactorization(3);
+    const primeFactorsOf4 = primeFactorization(4);
     try testing.expect(primeFactorsOf4.len == 1);
-    try testing.expect(primeFactorsOf4[0].base == 3);
-    try testing.expect(primeFactorsOf4[0].power.eq(Fraction.fromInt(1)));
+    try testing.expect(primeFactorsOf4[0].base == 2);
+    try testing.expect(primeFactorsOf4[0].power.eq(Fraction.fromInt(2)));
 
     const primeFactorsOf6 = primeFactorization(6);
     try testing.expect(primeFactorsOf6.len == 2);
@@ -80,7 +80,6 @@ test "primeFactorization" {
     try testing.expect(primeFactorsOf6[1].base == 3);
     try testing.expect(primeFactorsOf6[1].power.eq(Fraction.fromInt(1)));
 }
-
 
 fn NumberCompare(NumberType:type) type {
     return struct{
