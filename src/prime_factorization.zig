@@ -261,7 +261,7 @@ pub fn Factorization(Type: type, before: fn (lhs: Type, rhs: Type) bool, eq: fn 
 
         fn pow(self:Self, exponent: Fraction)Self{
             if(exponent.eq(Fraction.fromInt(0))){
-                return Self{.factors = &[]Factor(Type)};
+                return Self{.factors = &.{}};
             }
             const len = self.factors.len;
             var factors : [len]Factor(Type) = undefined;
@@ -269,6 +269,14 @@ pub fn Factorization(Type: type, before: fn (lhs: Type, rhs: Type) bool, eq: fn 
                 factors[i] = .{.base = self.factors[i].base, .power = self.factors[i].power.mul(exponent)};
             }
             return Self{.factors = &factors};
+        } 
+
+        fn powi(self:Self, exponent: comptime_int)Self{
+            return self.pow(Fraction.fromInt(exponent));
+        } 
+
+        fn root(self:Self, root_power: comptime_int)Self{
+            return self.pow(Fraction.fromInt(root_power).reciprocal());
         } 
 
     };
@@ -284,6 +292,9 @@ const twoInPrimes = ComptimeIntFactorization{
 };
 const fiveInPrimes = ComptimeIntFactorization{
     .factors = &.{.{.base = 5, .power = Fraction.fromInt(1)}},
+};
+const eightInPrimes = ComptimeIntFactorization{
+    .factors = &.{.{.base = 2, .power = Fraction.fromInt(3)}},
 };
 const tenInPrimes = ComptimeIntFactorization{
     .factors = &.{.{.base = 2, .power = Fraction.fromInt(1)}, .{.base = 5, .power = Fraction.fromInt(1)}},
@@ -335,6 +346,25 @@ test "Factorization pow" {
         try testing.expect(tenInPrimes.pow(Fraction.fromInt(-1)).eql(tenthInPrimes));
         try testing.expect(tenInPrimes.pow(Fraction.init(1,2)).eql(rootTenInPrimes));
         try testing.expect(tenRootTenInPrimes.pow(Fraction.init(2,3)).eql(tenInPrimes));
+        try testing.expect(tenInPrimes.pow(Fraction.fromInt(0)).eql(oneInPrimes));
+    }
+}
+
+test "Factorization powi" {
+    comptime {
+        try testing.expect(tenInPrimes.powi(2).eql(oneHundredInPrimes));
+        try testing.expect(twoInPrimes.powi(3).eql(eightInPrimes));
+        try testing.expect(rootTenInPrimes.powi(2).eql(tenInPrimes));
+        try testing.expect(tenInPrimes.powi(-1).eql(tenthInPrimes));
+        try testing.expect(tenInPrimes.powi(0).eql(oneInPrimes));
+    }
+}
+
+test "Factorization root" {
+    comptime {
+        try testing.expect(oneHundredInPrimes.root(2).eql(tenInPrimes));
+        try testing.expect(eightInPrimes.root(3).eql(twoInPrimes));
+        try testing.expect(tenInPrimes.root(2).eql(rootTenInPrimes));
     }
 }
 // test "Factorization.fromInt" {
