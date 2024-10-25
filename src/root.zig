@@ -73,9 +73,9 @@ fn Quantity(comptime ScalarType: type, comptime base_units_in: anytype, comptime
             );
         }
 
-        //     pub fn mul(this: Self, other: anytype) Times(@TypeOf(other)) {
-        //         return .{ .value = this.value * other.value };
-        //     }
+        pub fn mul(this: Self, other: anytype) Times(@TypeOf(other)) {
+            return .{ .value = this.value * other.value };
+        }
 
         //     pub const Reciprocal = Pow(-1);
 
@@ -217,32 +217,13 @@ test "Times" {
     try testing.expect(Metre32.Times(Degree32) == MetreDegree32);
 }
 
-// test "mul" {
-//     const F32Meter = Quantity(f32, baseUnit("meter"));
-//     const F32Second = Quantity(f32, baseUnit("second"));
-//     const meter_second = multiplyUnits(baseUnit("meter"), baseUnit("second"));
-//     const F32MeterSecond = Quantity(f32, meter_second);
+test "mul" {
+    const two_metres = Metre32.init(2.0);
+    const three_degrees = Degree32.init(3.0);
+    const six_degree_metres = MetreDegree32.init(6.0);
 
-//     const two_meters = F32Meter.init(2.0);
-//     const three_seconds = F32Second.init(3.0);
-//     const six_meter_seconds = F32MeterSecond.init(6.0);
-
-//     try testing.expect(two_meters.mul(three_seconds).eq(six_meter_seconds));
-// }
-
-// test "mul with type resolution" {
-//     const F32Meter = Quantity(f32, baseUnit("meter"));
-//     const F32Second = Quantity(f16, baseUnit("second"));
-//     const meter_second = multiplyUnits(baseUnit("meter"), baseUnit("second"));
-//     const F32MeterSecond = Quantity(f32, meter_second);
-//     const two_meters = F32Meter.init(2.0);
-//     const three_seconds = F32Second.init(3.0);
-//     const six_meter_seconds = F32MeterSecond.init(6.0);
-//     const product = two_meters.mul(three_seconds);
-
-//     try testing.expect(product.eq(six_meter_seconds));
-//     try testing.expect(@TypeOf(product) == F32MeterSecond);
-// }
+    try testing.expect(two_metres.mul(three_degrees).eq(six_degree_metres));
+}
 
 // test "reciprocal" {
 //     const second = baseUnit("second");
