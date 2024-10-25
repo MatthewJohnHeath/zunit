@@ -131,7 +131,7 @@ pub fn Factorization(Type: type, before: fn (lhs: Type, rhs: Type) bool, eq: fn 
                 return Self{ .factors = &.{} };
             }
             const len = self.factors.len;
-            var factors: [len]Factor(Type) = undefined;
+            comptime var factors: [len]Factor(Type) = undefined;
             for (0..len) |i| {
                 factors[i] = .{ .base = self.factors[i].base, .power = self.factors[i].power.mul(exponent) };
             }

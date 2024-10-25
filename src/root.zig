@@ -11,14 +11,17 @@ const PrimePowerFactors = factorization.ComptimeIntFactorization;
 const float_compare = compare.NumberCompare(comptime_float);
 const FloatFactors = factorization.Factorization(comptime_float, float_compare.before, float_compare.eql);
 
-fn Quantity(comptime ScalarType: type, comptime base: BaseUnitProduct, comptime prime_powers: PrimePowerFactors, comptime floats: FloatFactors) type {
+const Unit = struct{
+    base_units : BaseUnitProduct,
+    prime_powers : PrimePowerFactors,
+    float_factors : FloatFactors
+};
+
+fn Quantity(comptime ScalarType: type, comptime unit_struct: Unit) type {
     return struct {
         value: ScalarType,
 
-        const base_units = base;
-        const prime_power_factors = prime_powers;
-        const float_factors = floats;
-
+        const unit = unit_struct;
         const Self = @This();
         const Scalar = ScalarType;
 
@@ -119,13 +122,19 @@ fn Quantity(comptime ScalarType: type, comptime base: BaseUnitProduct, comptime 
     };
 }
 
-const radian =  BaseUnitProduct.fromBase("radian");
-const degree_in_half_rots = PrimePowerFactors.one.reciprocal();//factorization.primeFactorization(180).reciprocal();
-const half_rot_in_rad = FloatFactors.fromBase(std.math.pi);
-const Degree32 =  Quantity(f32,  radian, degree_in_half_rots, half_rot_in_rad);
+
 
 
 test "eq" {
+    const radian =  BaseUnitProduct.fromBase("radian");
+const degree_in_half_rots = factorization.primeFactorization(180).reciprocal();
+const half_rot_in_rad = FloatFactors.fromBase(std.math.pi);
+const unit= Unit{
+    .base_units = radian,
+    .prime_powers = degree_in_half_rots,
+    .float_factors = half_rot_in_rad
+};
+const Degree32 =  Quantity(f32, unit);
     const oneDegree = Degree32.init(1.0);
     const twoDegree = Degree32.init(2.0);
 
