@@ -114,7 +114,7 @@ pub fn Factorization(size : comptime_int, Type: type, before: fn (lhs: Type, rhs
                     }
                 }
             }
-            return Self{ .factors = factors };
+            return .{ .factors = factors };
         }
 
         pub fn reciprocal(self: Self) Self {
@@ -136,7 +136,6 @@ pub fn Factorization(size : comptime_int, Type: type, before: fn (lhs: Type, rhs
             if (exponent.eq(Fraction.fromInt(0))) {
                 return .{ .factors = .{} };
             }
-            const len = self.factors.len;
             comptime var factors: [len]Factor(Type) = undefined;
             for (0..len) |i| {
                 factors[i] = .{ .base = self.factors[i].base, .power = self.factors[i].power.mul(exponent) };
@@ -154,7 +153,7 @@ pub fn Factorization(size : comptime_int, Type: type, before: fn (lhs: Type, rhs
     };
 }
 
-pub fn ComptimeIntFactorization(size:comptime_int) {
+pub fn ComptimeIntFactorization(size:comptime_int) type{
     return Factorization(size, comptime_int, NumberCompare(comptime_int).before, NumberCompare(comptime_int).eql);
 }
 const oneInPrimes = ComptimeIntFactorization(0){.factors = .{},};
@@ -172,7 +171,7 @@ const oneHundredInPrimes = ComptimeIntFactorization(2){
     .factors = .{ .{ .base = 2, .power = Fraction.fromInt(2) }, .{ .base = 5, .power = Fraction.fromInt(2) } },
 };
 const tenthInPrimes = ComptimeIntFactorization(2){
-    .factors = &.{ .{ .base = 2, .power = Fraction.fromInt(-1) }, .{ .base = 5, .power = Fraction.fromInt(-1) } },
+    .factors = .{ .{ .base = 2, .power = Fraction.fromInt(-1) }, .{ .base = 5, .power = Fraction.fromInt(-1) } },
 };
 const rootTenInPrimes = ComptimeIntFactorization(2){
     .factors = .{ .{ .base = 2, .power = Fraction.init(1, 2) }, .{ .base = 5, .power = Fraction.init(1, 2) } },
@@ -261,7 +260,7 @@ test "distinctPrimeFactorCount" {
     try testing.expect(distinctPrimeFactorCount(12) == 2);
 }
 
-pub fn primeFactorization(number: comptime_int) ComptimeIntFactorization {
+pub fn primeFactorization(number: comptime_int) ComptimeIntFactorization(distinctPrimeFactorCount(number)){
     const size = distinctPrimeFactorCount(number);
     if (size == 0) {
         return oneInPrimes;
@@ -283,7 +282,7 @@ pub fn primeFactorization(number: comptime_int) ComptimeIntFactorization {
         }
         p += 1;
     }
-    return .{ .factors = &factorization };
+    return .{ .factors = factorization };
 }
 
 test "primeFactorization" {
@@ -297,7 +296,7 @@ test "primeFactorization" {
     }
 }
 
-pub fn fractionInPrimes(frac: Fraction) ComptimeIntFactorization {
+pub fn fractionInPrimes(frac: Fraction) @TypeOf(primeFactorization(frac.numerator).div(primeFactorization(frac.denominator))) {
     return primeFactorization(frac.numerator).div(primeFactorization(frac.denominator));
 }
 
