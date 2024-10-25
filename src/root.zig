@@ -22,125 +22,114 @@ fn Quantity(comptime ScalarType: type, comptime base: BaseUnitProduct, comptime 
         const Self = @This();
         const Scalar = ScalarType;
 
-        pub fn init(val: Scalar) Self {
-            return Self{ .value = val };
-        }
+        // pub fn init(val: Scalar) Self {
+        //     return Self{ .value = val };
+        // }
 
-        pub fn eq(this: Self, other: Self) bool {
-            return this.value == other.value;
-        }
+        // pub fn eq(this: Self, other: Self) bool {
+        //     return this.value == other.value;
+        // }
 
-        pub fn lt(this: Self, other: Self) bool {
-            return this.value < other.value;
-        }
+    //     pub fn lt(this: Self, other: Self) bool {
+    //         return this.value < other.value;
+    //     }
 
-        pub fn gt(this: Self, other: Self) bool {
-            return other.lt(this);
-        }
+    //     pub fn gt(this: Self, other: Self) bool {
+    //         return other.lt(this);
+    //     }
 
-        pub fn le(this: Self, other: Self) bool {
-            return !this.gt(other);
-        }
+    //     pub fn le(this: Self, other: Self) bool {
+    //         return !this.gt(other);
+    //     }
 
-        pub fn ge(this: Self, other: Self) bool {
-            return !this.lt(other);
-        }
+    //     pub fn ge(this: Self, other: Self) bool {
+    //         return !this.lt(other);
+    //     }
 
-        pub fn neg(this: Self) Self {
-            return Self{
-                .value = -this.value,
-            };
-        }
+    //     pub fn neg(this: Self) Self {
+    //         return Self{
+    //             .value = -this.value,
+    //         };
+    //     }
 
-        pub fn add(this: Self, other: Self) Self {
-            return .{
-                .value = this.value + other.value,
-            };
-        }
+    //     pub fn add(this: Self, other: Self) Self {
+    //         return .{
+    //             .value = this.value + other.value,
+    //         };
+    //     }
 
-        pub fn sub(this: Self, other: Self) Self {
-            return .{
-                .value = this.value - other.value,
-            };
-        }
+    //     pub fn sub(this: Self, other: Self) Self {
+    //         return .{
+    //             .value = this.value - other.value,
+    //         };
+    //     }
 
-        pub fn Times(Other: type) type {
-            const other: Other = undefined;
-            const self: Self = undefined;
-            return Quantity(
-                @TypeOf(self.value, other.value),
-                base_units.mul(Other.base_units),
-                prime_power_factors.mul(Other.prime_power_factors),
-                float_factors.mul(Other.float_factors),
-            );
-        }
+    //     pub fn Times(Other: type) type {
+    //         const other: Other = undefined;
+    //         const self: Self = undefined;
+    //         return Quantity(
+    //             @TypeOf(self.value, other.value),
+    //             base_units.mul(Other.base_units),
+    //             prime_power_factors.mul(Other.prime_power_factors),
+    //             float_factors.mul(Other.float_factors),
+    //         );
+    //     }
 
-        pub fn mul(this: Self, other: anytype) Times(@TypeOf(other)) {
-            return .{ .value = this.value * other.value };
-        }
+    //     pub fn mul(this: Self, other: anytype) Times(@TypeOf(other)) {
+    //         return .{ .value = this.value * other.value };
+    //     }
 
-        pub const Reciprocal = Pow(-1);
+    //     pub const Reciprocal = Pow(-1);
 
-        pub fn reciprocal(self: Self) Reciprocal {
-            return Reciprocal{ .value = 1.0 / self.value };
-        }
+    //     pub fn reciprocal(self: Self) Reciprocal {
+    //         return Reciprocal{ .value = 1.0 / self.value };
+    //     }
 
-        pub fn Per(Other: type) type {
-            return Times(Other.Reciprocal);
-        }
+    //     pub fn Per(Other: type) type {
+    //         return Times(Other.Reciprocal);
+    //     }
 
-        pub fn div(this: Self, other: anytype) Per(@TypeOf(other)) {
-            return .{ .value = this.value / other.value };
-        }
+    //     pub fn div(this: Self, other: anytype) Per(@TypeOf(other)) {
+    //         return .{ .value = this.value / other.value };
+    //     }
 
-        pub fn Pow(power: Fraction) type {
-            return Quantity(Scalar, base_units.pow(power), prime_power_factors.pow(power), float_factors.pow(power));
-        }
+    //     pub fn Pow(power: Fraction) type {
+    //         return Quantity(Scalar, base_units.pow(power), prime_power_factors.pow(power), float_factors.pow(power));
+    //     }
 
-        pub fn pow(self: Self, power: Fraction) Pow(power) {
-            return .{ .value = std.math.pow(self.value, power.toFloat) };
-        }
+    //     pub fn pow(self: Self, power: Fraction) Pow(power) {
+    //         return .{ .value = std.math.pow(self.value, power.toFloat) };
+    //     }
 
-        pub fn ToThe(power: comptime_int) type {
-            return Pow(Fraction.fromInt(power));
-        }
+    //     pub fn ToThe(power: comptime_int) type {
+    //         return Pow(Fraction.fromInt(power));
+    //     }
 
-        pub fn powi(self: Self, power: comptime_int) ToThe(power) {
-            return .{ .value = std.math.pow(self.value, power.toFloat) };
-        }
+    //     pub fn powi(self: Self, power: comptime_int) ToThe(power) {
+    //         return .{ .value = std.math.pow(self.value, power.toFloat) };
+    //     }
 
-        pub fn Root(power: comptime_int) type {
-            return Pow(Fraction.init(1, power));
-        }
+    //     pub fn Root(power: comptime_int) type {
+    //         return Pow(Fraction.init(1, power));
+    //     }
 
-        pub fn root(self: Self, power: comptime_int) ToThe(power) {
-            return .{ .value = std.math.pow(self.value, 1.0 / power.toFloat) };
-        }
+    //     pub fn root(self: Self, power: comptime_int) ToThe(power) {
+    //         return .{ .value = std.math.pow(self.value, 1.0 / power.toFloat) };
+    //     }
     };
 }
 
-pub fn BaseQuantity(name: []const u8, Type: type) type {
-    return Quantity(Type, BaseUnitProduct.fromBase(name), PrimePowerFactors.one, FloatFactors.one);
+
+const Degree32 =  Quantity(f32,  BaseUnitProduct.fromBase("radian"),  factorization.primeFactorization(180).reciprocal(),  FloatFactors.fromBase(std.math.pi));
+
+
+test "eq" {
+    const oneDegree = Degree32.init(1.0);
+    const twoDegree = Degree32.init(2.0);
+
+    try testing.expect(oneDegree.eq(oneDegree));
+    try testing.expect(!oneDegree.eq(twoDegree));
 }
-
-pub fn FractionPrefix(prefix: Fraction, Type: type) type {
-    return Quantity(Type, BaseUnitProduct.one, PrimePowerFactors.fromBase(prefix), FloatFactors.one);
-}
-
-pub fn FloatPrefix(prefix: comptime_float, Type: type) type {
-    return Quantity(Type, BaseUnitProduct.one, PrimePowerFactors.fone, FloatFactors.romBase(prefix));
-}
-
-// test "eq" {
-//     const F32Meter = Quantity(f32, baseUnit("meter"));
-//     const oneMeter = F32Meter.init(1.0);
-//     const twoMeters = F32Meter.init(2.0);
-//     const oneMeterF16 = Quantity(f32, baseUnit("meter")).init(1.0);
-
-//     try testing.expect(oneMeter.eq(oneMeter));
-//     try testing.expect(!oneMeter.eq(twoMeters));
-//     try testing.expect(oneMeter.eq(oneMeterF16));
-// }
 
 // test "neg" {
 //     const F32Meter = Quantity(f32, baseUnit("meter"));
@@ -173,6 +162,8 @@ pub fn FloatPrefix(prefix: comptime_float, Type: type) type {
 //     try testing.expect(difference.eq(minusOneMeter));
 //     try testing.expect(@TypeOf(difference) == F32Meter);
 // }
+
+const Metre32 = Quantity(f32, BaseUnitProduct.fromBase("metre"), PrimePowerFactors.one, FloatFactors.one);
 
 // test "mul" {
 //     const F32Meter = Quantity(f32, baseUnit("meter"));
@@ -224,3 +215,14 @@ pub fn FloatPrefix(prefix: comptime_float, Type: type) type {
 //     try testing.expect(quotient.eq(one_point_five_mps));
 //     try testing.expect(@TypeOf(quotient) == F32MeterPerSecond);
 // }
+pub fn BaseQuantity(name: []const u8, Type: type) type {
+    return Quantity(Type, BaseUnitProduct.fromBase(name), PrimePowerFactors.one, FloatFactors.one);
+}
+
+pub fn FractionPrefix(prefix: Fraction, Type: type) type {
+    return Quantity(Type, BaseUnitProduct.one, PrimePowerFactors.fromBase(prefix), FloatFactors.one);
+}
+
+pub fn FloatPrefix(prefix: comptime_float, Type: type) type {
+    return Quantity(Type, BaseUnitProduct.one, PrimePowerFactors.fone, FloatFactors.romBase(prefix));
+}

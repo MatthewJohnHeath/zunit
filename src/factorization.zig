@@ -10,7 +10,7 @@ fn Factor(BaseType: type) type {
     return struct { base: BaseType, power: Fraction };
 }
 
-fn Factorization(Type: type, before: fn (lhs: Type, rhs: Type) bool, eq: fn (lhs: Type, rhs: Type) bool) type {
+pub fn Factorization(Type: type, before: fn (lhs: Type, rhs: Type) bool, eq: fn (lhs: Type, rhs: Type) bool) type {
     return struct {
         factors: []const Factor(Type),
         const Self = @This();
