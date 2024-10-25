@@ -77,43 +77,43 @@ fn Quantity(comptime ScalarType: type, comptime base_units_in: anytype, comptime
             return .{ .value = this.value * other.value };
         }
 
-        //     pub const Reciprocal = Pow(-1);
+        pub const Reciprocal = ToThe(-1);
 
-        //     pub fn reciprocal(self: Self) Reciprocal {
-        //         return Reciprocal{ .value = 1.0 / self.value };
-        //     }
+        pub fn reciprocal(self: Self) Reciprocal {
+            return Reciprocal{ .value = 1.0 / self.value };
+        }
 
-        //     pub fn Per(Other: type) type {
-        //         return Times(Other.Reciprocal);
-        //     }
+        pub fn Per(Other: type) type {
+            return Times(Other.Reciprocal);
+        }
 
-        //     pub fn div(this: Self, other: anytype) Per(@TypeOf(other)) {
-        //         return .{ .value = this.value / other.value };
-        //     }
+        pub fn div(this: Self, other: anytype) Per(@TypeOf(other)) {
+            return .{ .value = this.value / other.value };
+        }
 
-        //     pub fn Pow(power: Fraction) type {
-        //         return Quantity(Scalar, base_units.pow(power), prime_power_factors.pow(power), float_factors.pow(power));
-        //     }
+        pub fn Pow(power: Fraction) type {
+            return Quantity(Scalar, base_units.pow(power), prime_powers.pow(power), float_powers.pow(power));
+        }
 
-        //     pub fn pow(self: Self, power: Fraction) Pow(power) {
-        //         return .{ .value = std.math.pow(self.value, power.toFloat) };
-        //     }
+        pub fn pow(self: Self, power: Fraction) Pow(power) {
+            return .{ .value = std.math.pow(self.value, power.toFloat) };
+        }
 
-        //     pub fn ToThe(power: comptime_int) type {
-        //         return Pow(Fraction.fromInt(power));
-        //     }
+        pub fn ToThe(power: comptime_int) type {
+            return Pow(Fraction.fromInt(power));
+        }
 
-        //     pub fn powi(self: Self, power: comptime_int) ToThe(power) {
-        //         return .{ .value = std.math.pow(self.value, power.toFloat) };
-        //     }
+        pub fn powi(self: Self, power: comptime_int) ToThe(power) {
+            return .{ .value = std.math.pow(self.value, power.toFloat) };
+        }
 
-        //     pub fn Root(power: comptime_int) type {
-        //         return Pow(Fraction.init(1, power));
-        //     }
+        pub fn Root(power: comptime_int) type {
+            return Pow(Fraction.init(1, power));
+        }
 
-        //     pub fn root(self: Self, power: comptime_int) ToThe(power) {
-        //         return .{ .value = std.math.pow(self.value, 1.0 / power.toFloat) };
-        //     }
+        pub fn root(self: Self, power: comptime_int) ToThe(power) {
+            return .{ .value = std.math.pow(self.value, 1.0 / power.toFloat) };
+        }
     };
 }
 
@@ -223,6 +223,12 @@ test "mul" {
     const six_degree_metres = MetreDegree32.init(6.0);
 
     try testing.expect(two_metres.mul(three_degrees).eq(six_degree_metres));
+}
+
+const PerDegree32 = Quantity(f32, radian.reciprocal(), factorization.primeFactorization(180), pi.reciprocal());
+
+test "Reciprocal" {
+    try testing.expect(Degree32.Reciprocal == PerDegree32);
 }
 
 // test "reciprocal" {
