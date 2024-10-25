@@ -231,12 +231,11 @@ test "Reciprocal" {
     try testing.expect(Degree32.Reciprocal == PerDegree32);
 }
 
-// test "reciprocal" {
-//     const second = baseUnit("second");
-//     const twoSeconds = Quantity(f16, second).init(2.0);
-//     const half_per_second = Quantity(f16, invertUnit(second)).init(0.5);
-//     try testing.expect(twoSeconds.reciprocal().eq(half_per_second));
-// }
+test "reciprocal" {
+    const two_degrees = Degree32.init(2.0);
+    const half_per_degree = PerDegree32.init(0.5);
+    try testing.expect(two_degrees.reciprocal().eq(half_per_degree));
+}
 
 // test "div" {
 //     const meter = baseUnit("meter");
