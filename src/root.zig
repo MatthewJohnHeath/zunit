@@ -6,22 +6,17 @@ const fraction = @import("comptime_fraction.zig");
 
 const Fraction = fraction.ComptimeFraction;
 
-const BaseUnitProduct = factorization.Factorization([]const u8, compare.string_before, compare.string_eql);
-const PrimePowerFactors = factorization.ComptimeIntFactorization;
+const BaseUnit = factorization.Factorization(1, []const u8, compare.string_before, compare.string_eql);
 const float_compare = compare.NumberCompare(comptime_float);
-const FloatFactors = factorization.Factorization(comptime_float, float_compare.before, float_compare.eql);
+const FloatFactor = factorization.Factorization(1, comptime_float, float_compare.before, float_compare.eql);
 
-const Unit = struct{
-    base_units : BaseUnitProduct,
-    prime_powers : PrimePowerFactors,
-    float_factors : FloatFactors
-};
-
-fn Quantity(comptime ScalarType: type, comptime unit_struct: Unit) type {
+fn Quantity(comptime ScalarType: type, comptime base_units_in: anytype, comptime prime_powers_in: anytype, comptime float_powers_in: anytype) type {
     return struct {
         value: ScalarType,
 
-        const unit = unit_struct;
+        const base_units = base_units_in;
+        const prime_powers = prime_powers_in;
+        const float_powers = float_powers_in;
         const Self = @This();
         const Scalar = ScalarType;
 
@@ -33,148 +28,180 @@ fn Quantity(comptime ScalarType: type, comptime unit_struct: Unit) type {
             return this.value == other.value;
         }
 
-    //     pub fn lt(this: Self, other: Self) bool {
-    //         return this.value < other.value;
-    //     }
+        pub fn neq(this: Self, other: Self) bool {
+            return !this.eq(other);
+        }
 
-    //     pub fn gt(this: Self, other: Self) bool {
-    //         return other.lt(this);
-    //     }
+        pub fn lt(this: Self, other: Self) bool {
+            return this.value < other.value;
+        }
 
-    //     pub fn le(this: Self, other: Self) bool {
-    //         return !this.gt(other);
-    //     }
+        pub fn gt(this: Self, other: Self) bool {
+            return other.lt(this);
+        }
 
-    //     pub fn ge(this: Self, other: Self) bool {
-    //         return !this.lt(other);
-    //     }
+        pub fn le(this: Self, other: Self) bool {
+            return !this.gt(other);
+        }
 
-    //     pub fn neg(this: Self) Self {
-    //         return Self{
-    //             .value = -this.value,
-    //         };
-    //     }
+        pub fn ge(this: Self, other: Self) bool {
+            return !this.lt(other);
+        }
 
-    //     pub fn add(this: Self, other: Self) Self {
-    //         return .{
-    //             .value = this.value + other.value,
-    //         };
-    //     }
+        pub fn neg(this: Self) Self {
+            return Self{
+                .value = -this.value,
+            };
+        }
 
-    //     pub fn sub(this: Self, other: Self) Self {
-    //         return .{
-    //             .value = this.value - other.value,
-    //         };
-    //     }
+        pub fn add(this: Self, other: Self) Self {
+            return .{
+                .value = this.value + other.value,
+            };
+        }
 
-    //     pub fn Times(Other: type) type {
-    //         const other: Other = undefined;
-    //         const self: Self = undefined;
-    //         return Quantity(
-    //             @TypeOf(self.value, other.value),
-    //             base_units.mul(Other.base_units),
-    //             prime_power_factors.mul(Other.prime_power_factors),
-    //             float_factors.mul(Other.float_factors),
-    //         );
-    //     }
+        pub fn sub(this: Self, other: Self) Self {
+            return .{
+                .value = this.value - other.value,
+            };
+        }
 
-    //     pub fn mul(this: Self, other: anytype) Times(@TypeOf(other)) {
-    //         return .{ .value = this.value * other.value };
-    //     }
+        //     pub fn Times(Other: type) type {
+        //         const other: Other = undefined;
+        //         const self: Self = undefined;
+        //         return Quantity(
+        //             @TypeOf(self.value, other.value),
+        //             base_units.mul(Other.base_units),
+        //             prime_power_factors.mul(Other.prime_power_factors),
+        //             float_factors.mul(Other.float_factors),
+        //         );
+        //     }
 
-    //     pub const Reciprocal = Pow(-1);
+        //     pub fn mul(this: Self, other: anytype) Times(@TypeOf(other)) {
+        //         return .{ .value = this.value * other.value };
+        //     }
 
-    //     pub fn reciprocal(self: Self) Reciprocal {
-    //         return Reciprocal{ .value = 1.0 / self.value };
-    //     }
+        //     pub const Reciprocal = Pow(-1);
 
-    //     pub fn Per(Other: type) type {
-    //         return Times(Other.Reciprocal);
-    //     }
+        //     pub fn reciprocal(self: Self) Reciprocal {
+        //         return Reciprocal{ .value = 1.0 / self.value };
+        //     }
 
-    //     pub fn div(this: Self, other: anytype) Per(@TypeOf(other)) {
-    //         return .{ .value = this.value / other.value };
-    //     }
+        //     pub fn Per(Other: type) type {
+        //         return Times(Other.Reciprocal);
+        //     }
 
-    //     pub fn Pow(power: Fraction) type {
-    //         return Quantity(Scalar, base_units.pow(power), prime_power_factors.pow(power), float_factors.pow(power));
-    //     }
+        //     pub fn div(this: Self, other: anytype) Per(@TypeOf(other)) {
+        //         return .{ .value = this.value / other.value };
+        //     }
 
-    //     pub fn pow(self: Self, power: Fraction) Pow(power) {
-    //         return .{ .value = std.math.pow(self.value, power.toFloat) };
-    //     }
+        //     pub fn Pow(power: Fraction) type {
+        //         return Quantity(Scalar, base_units.pow(power), prime_power_factors.pow(power), float_factors.pow(power));
+        //     }
 
-    //     pub fn ToThe(power: comptime_int) type {
-    //         return Pow(Fraction.fromInt(power));
-    //     }
+        //     pub fn pow(self: Self, power: Fraction) Pow(power) {
+        //         return .{ .value = std.math.pow(self.value, power.toFloat) };
+        //     }
 
-    //     pub fn powi(self: Self, power: comptime_int) ToThe(power) {
-    //         return .{ .value = std.math.pow(self.value, power.toFloat) };
-    //     }
+        //     pub fn ToThe(power: comptime_int) type {
+        //         return Pow(Fraction.fromInt(power));
+        //     }
 
-    //     pub fn Root(power: comptime_int) type {
-    //         return Pow(Fraction.init(1, power));
-    //     }
+        //     pub fn powi(self: Self, power: comptime_int) ToThe(power) {
+        //         return .{ .value = std.math.pow(self.value, power.toFloat) };
+        //     }
 
-    //     pub fn root(self: Self, power: comptime_int) ToThe(power) {
-    //         return .{ .value = std.math.pow(self.value, 1.0 / power.toFloat) };
-    //     }
+        //     pub fn Root(power: comptime_int) type {
+        //         return Pow(Fraction.init(1, power));
+        //     }
+
+        //     pub fn root(self: Self, power: comptime_int) ToThe(power) {
+        //         return .{ .value = std.math.pow(self.value, 1.0 / power.toFloat) };
+        //     }
     };
 }
 
-
-
+const Degree32 = Quantity(f32, BaseUnit.fromBase("radian"), factorization.primeFactorization(180).reciprocal(), FloatFactor.fromBase(std.math.pi));
 
 test "eq" {
-    const radian =  BaseUnitProduct.fromBase("radian");
-const degree_in_half_rots = factorization.primeFactorization(180).reciprocal();
-const half_rot_in_rad = FloatFactors.fromBase(std.math.pi);
-const unit= Unit{
-    .base_units = radian,
-    .prime_powers = degree_in_half_rots,
-    .float_factors = half_rot_in_rad
-};
-const Degree32 =  Quantity(f32, unit);
     const oneDegree = Degree32.init(1.0);
-    const twoDegree = Degree32.init(2.0);
+    const twoDegrees = Degree32.init(2.0);
 
     try testing.expect(oneDegree.eq(oneDegree));
-    try testing.expect(!oneDegree.eq(twoDegree));
+    try testing.expect(!oneDegree.eq(twoDegrees));
 }
 
-// test "neg" {
-//     const F32Meter = Quantity(f32, baseUnit("meter"));
-//     const oneMeter = F32Meter.init(1.0);
-//     const minusOneMeter = F32Meter.init(-1.0);
+test "neq" {
+    const oneDegree = Degree32.init(1.0);
+    const twoDegrees = Degree32.init(2.0);
 
-//     try testing.expect(oneMeter.neg().eq(minusOneMeter));
-// }
+    try testing.expect(!oneDegree.neq(oneDegree));
+    try testing.expect(oneDegree.neq(twoDegrees));
+}
 
-// test "add" {
-//     const F32Meter = Quantity(f32, baseUnit("meter"));
-//     const oneMeter = F32Meter.init(1.0);
-//     const twoMeters = Quantity(f16, baseUnit("meter")).init(2.0);
-//     const threeMeters = F32Meter.init(3.0);
+test "lt" {
+    const oneDegree = Degree32.init(1.0);
+    const twoDegrees = Degree32.init(2.0);
 
-//     const sum = oneMeter.add(twoMeters);
+    try testing.expect(oneDegree.lt(twoDegrees));
+    try testing.expect(!twoDegrees.lt(oneDegree));
+    try testing.expect(!oneDegree.lt(oneDegree));
+}
 
-//     try testing.expect(sum.eq(threeMeters));
-//     try testing.expect(@TypeOf(sum) == F32Meter);
-// }
+test "gt" {
+    const oneDegree = Degree32.init(1.0);
+    const twoDegrees = Degree32.init(2.0);
 
-// test "sub" {
-//     const F32Meter = Quantity(f32, baseUnit("meter"));
-//     const oneMeter = F32Meter.init(1.0);
-//     const twoMeters = Quantity(f16, baseUnit("meter")).init(2.0);
-//     const minusOneMeter = F32Meter.init(-1.0);
+    try testing.expect(!oneDegree.gt(twoDegrees));
+    try testing.expect(twoDegrees.gt(oneDegree));
+    try testing.expect(!oneDegree.gt(oneDegree));
+}
 
-//     const difference = oneMeter.sub(twoMeters);
+test "le" {
+    const oneDegree = Degree32.init(1.0);
+    const twoDegrees = Degree32.init(2.0);
 
-//     try testing.expect(difference.eq(minusOneMeter));
-//     try testing.expect(@TypeOf(difference) == F32Meter);
-// }
+    try testing.expect(oneDegree.le(twoDegrees));
+    try testing.expect(!twoDegrees.le(oneDegree));
+    try testing.expect(oneDegree.le(oneDegree));
+}
 
-const Metre32 = Quantity(f32, BaseUnitProduct.fromBase("metre"), PrimePowerFactors.one, FloatFactors.one);
+test "ge" {
+    const oneDegree = Degree32.init(1.0);
+    const twoDegrees = Degree32.init(2.0);
+
+    try testing.expect(!oneDegree.ge(twoDegrees));
+    try testing.expect(twoDegrees.ge(oneDegree));
+    try testing.expect(oneDegree.ge(oneDegree));
+}
+
+test "neg" {
+    const oneDegree = Degree32.init(1.0);
+    const minusOneDegree = Degree32.init(-1.0);
+
+    try testing.expect(oneDegree.neg().eq(minusOneDegree));
+    try testing.expect(minusOneDegree.neg().eq(oneDegree));
+}
+
+test "add" {
+    const oneDegree = Degree32.init(1.0);
+    const twoDegrees = Degree32.init(2.0);
+    const threeDegrees = Degree32.init(3.0);
+
+    const sum = oneDegree.add(twoDegrees);
+
+    try testing.expect(sum.eq(threeDegrees));
+}
+
+test "sub" {
+    const oneDegree = Degree32.init(1.0);
+    const twoDegrees = Degree32.init(2.0);
+    const minusOneDegree = Degree32.init(-1.0);
+
+    const difference = oneDegree.sub(twoDegrees);
+
+    try testing.expect(difference.eq(minusOneDegree));
+}
 
 // test "mul" {
 //     const F32Meter = Quantity(f32, baseUnit("meter"));
@@ -226,14 +253,3 @@ const Metre32 = Quantity(f32, BaseUnitProduct.fromBase("metre"), PrimePowerFacto
 //     try testing.expect(quotient.eq(one_point_five_mps));
 //     try testing.expect(@TypeOf(quotient) == F32MeterPerSecond);
 // }
-pub fn BaseQuantity(name: []const u8, Type: type) type {
-    return Quantity(Type, BaseUnitProduct.fromBase(name), PrimePowerFactors.one, FloatFactors.one);
-}
-
-pub fn FractionPrefix(prefix: Fraction, Type: type) type {
-    return Quantity(Type, BaseUnitProduct.one, PrimePowerFactors.fromBase(prefix), FloatFactors.one);
-}
-
-pub fn FloatPrefix(prefix: comptime_float, Type: type) type {
-    return Quantity(Type, BaseUnitProduct.one, PrimePowerFactors.fone, FloatFactors.romBase(prefix));
-}
