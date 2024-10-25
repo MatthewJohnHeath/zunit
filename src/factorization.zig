@@ -15,7 +15,7 @@ pub fn Factorization(Type: type, before: fn (lhs: Type, rhs: Type) bool, eq: fn 
         factors: []const Factor(Type),
         const Self = @This();
 
-        const one = Self{ .factors = &.{} };
+        pub const one = Self{ .factors = &.{} };
 
         pub fn fromBase(base: Type) Self {
             return .{ .factors = &.{.{ .base = base, .power = Fraction.fromInt(1) }} };

@@ -22,13 +22,13 @@ fn Quantity(comptime ScalarType: type, comptime base: BaseUnitProduct, comptime 
         const Self = @This();
         const Scalar = ScalarType;
 
-        // pub fn init(val: Scalar) Self {
-        //     return Self{ .value = val };
-        // }
+        pub fn init(val: Scalar) Self {
+            return Self{ .value = val };
+        }
 
-        // pub fn eq(this: Self, other: Self) bool {
-        //     return this.value == other.value;
-        // }
+        pub fn eq(this: Self, other: Self) bool {
+            return this.value == other.value;
+        }
 
     //     pub fn lt(this: Self, other: Self) bool {
     //         return this.value < other.value;
@@ -119,8 +119,10 @@ fn Quantity(comptime ScalarType: type, comptime base: BaseUnitProduct, comptime 
     };
 }
 
-
-const Degree32 =  Quantity(f32,  BaseUnitProduct.fromBase("radian"),  factorization.primeFactorization(180).reciprocal(),  FloatFactors.fromBase(std.math.pi));
+const radian =  BaseUnitProduct.fromBase("radian");
+const degree_in_half_rots = PrimePowerFactors.one.reciprocal();//factorization.primeFactorization(180).reciprocal();
+const half_rot_in_rad = FloatFactors.fromBase(std.math.pi);
+const Degree32 =  Quantity(f32,  radian, degree_in_half_rots, half_rot_in_rad);
 
 
 test "eq" {
