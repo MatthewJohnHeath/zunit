@@ -10,15 +10,17 @@ fn Factor(BaseType: type) type {
     return struct { base: BaseType, power: Fraction };
 }
 
-pub fn Factorization(size : comptime_int, Type: type, before: fn (lhs: Type, rhs: Type) bool, eq: fn (lhs: Type, rhs: Type) bool) type {
+pub fn Factorization(size: comptime_int, Type: type, before: fn (lhs: Type, rhs: Type) bool, eq: fn (lhs: Type, rhs: Type) bool) type {
     return struct {
         factors: [size]Factor(Type),
         const Self = @This();
         const len = size;
 
-        fn OfSize(new_size : comptime_int)type{
-            return Factorization(new_size , Type, before, eq); 
+        fn OfSize(new_size: comptime_int) type {
+            return Factorization(new_size, Type, before, eq);
         }
+
+        pub const one = OfSize(0){ .factors = .{} };
 
         pub fn fromBase(base: Type) OfSize(1) {
             return .{ .factors = .{.{ .base = base, .power = Fraction.fromInt(1) }} };
@@ -125,13 +127,13 @@ pub fn Factorization(size : comptime_int, Type: type, before: fn (lhs: Type, rhs
             return self.mul(other.reciprocal());
         }
 
-        fn PowType(exponent: Fraction) type{
-            if(exponent.eq(Fraction.fromInt(0))){
+        fn PowType(exponent: Fraction) type {
+            if (exponent.eq(Fraction.fromInt(0))) {
                 return OfSize(0);
             }
             return Self;
         }
-        
+
         pub fn pow(self: Self, exponent: Fraction) PowType(exponent) {
             if (exponent.eq(Fraction.fromInt(0))) {
                 return .{ .factors = .{} };
@@ -147,17 +149,21 @@ pub fn Factorization(size : comptime_int, Type: type, before: fn (lhs: Type, rhs
             return self.pow(Fraction.fromInt(exponent));
         }
 
-        pub fn root(self: Self, root_power: comptime_int) Self {// leaving return type as `Self` means 0th power won't compile.
+        pub fn root(self: Self, root_power: comptime_int) Self { // leaving return type as `Self` means 0th power won't compile.
             return self.pow(Fraction.fromInt(root_power).reciprocal());
         }
     };
 }
 
-pub fn ComptimeIntFactorization(size:comptime_int) type{
+pub fn ComptimeIntFactorization(size: comptime_int) type {
     return Factorization(size, comptime_int, NumberCompare(comptime_int).before, NumberCompare(comptime_int).eql);
 }
-const oneInPrimes = ComptimeIntFactorization(0){.factors = .{},};
-const twoInPrimes = ComptimeIntFactorization(1){.factors = .{.{ .base = 2, .power = Fraction.fromInt(1) }},};
+const oneInPrimes = ComptimeIntFactorization(0){
+    .factors = .{},
+};
+const twoInPrimes = ComptimeIntFactorization(1){
+    .factors = .{.{ .base = 2, .power = Fraction.fromInt(1) }},
+};
 const fiveInPrimes = ComptimeIntFactorization(1){
     .factors = .{.{ .base = 5, .power = Fraction.fromInt(1) }},
 };
@@ -260,7 +266,7 @@ test "distinctPrimeFactorCount" {
     try testing.expect(distinctPrimeFactorCount(12) == 2);
 }
 
-pub fn primeFactorization(number: comptime_int) ComptimeIntFactorization(distinctPrimeFactorCount(number)){
+pub fn primeFactorization(number: comptime_int) ComptimeIntFactorization(distinctPrimeFactorCount(number)) {
     const size = distinctPrimeFactorCount(number);
     if (size == 0) {
         return oneInPrimes;

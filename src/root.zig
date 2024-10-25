@@ -6,10 +6,6 @@ const fraction = @import("comptime_fraction.zig");
 
 const Fraction = fraction.ComptimeFraction;
 
-const BaseUnit = factorization.Factorization(1, []const u8, compare.string_before, compare.string_eql);
-const float_compare = compare.NumberCompare(comptime_float);
-const FloatFactor = factorization.Factorization(1, comptime_float, float_compare.before, float_compare.eql);
-
 fn Quantity(comptime ScalarType: type, comptime base_units_in: anytype, comptime prime_powers_in: anytype, comptime float_powers_in: anytype) type {
     return struct {
         value: ScalarType,
@@ -66,16 +62,16 @@ fn Quantity(comptime ScalarType: type, comptime base_units_in: anytype, comptime
             };
         }
 
-        //     pub fn Times(Other: type) type {
-        //         const other: Other = undefined;
-        //         const self: Self = undefined;
-        //         return Quantity(
-        //             @TypeOf(self.value, other.value),
-        //             base_units.mul(Other.base_units),
-        //             prime_power_factors.mul(Other.prime_power_factors),
-        //             float_factors.mul(Other.float_factors),
-        //         );
-        //     }
+        pub fn Times(Other: type) type {
+            const other: Other = undefined;
+            const self: Self = undefined;
+            return Quantity(
+                @TypeOf(self.value, other.value),
+                base_units.mul(Other.base_units),
+                prime_powers.mul(Other.prime_powers),
+                float_powers.mul(Other.float_powers),
+            );
+        }
 
         //     pub fn mul(this: Self, other: anytype) Times(@TypeOf(other)) {
         //         return .{ .value = this.value * other.value };
@@ -121,7 +117,14 @@ fn Quantity(comptime ScalarType: type, comptime base_units_in: anytype, comptime
     };
 }
 
-const Degree32 = Quantity(f32, BaseUnit.fromBase("radian"), factorization.primeFactorization(180).reciprocal(), FloatFactor.fromBase(std.math.pi));
+const BaseUnit = factorization.Factorization(1, []const u8, compare.string_before, compare.string_eql);
+const float_compare = compare.NumberCompare(comptime_float);
+const FloatFactor = factorization.Factorization(1, comptime_float, float_compare.before, float_compare.eql);
+
+const radian = BaseUnit.fromBase("radian");
+const one_over_360 = factorization.primeFactorization(180).reciprocal();
+const pi = FloatFactor.fromBase(std.math.pi);
+const Degree32 = Quantity(f32, radian, one_over_360, pi);
 
 test "eq" {
     const oneDegree = Degree32.init(1.0);
@@ -201,6 +204,17 @@ test "sub" {
     const difference = oneDegree.sub(twoDegrees);
 
     try testing.expect(difference.eq(minusOneDegree));
+}
+
+const metre = BaseUnit.fromBase("radian");
+const one = factorization.primeFactorization(1);
+const f_one = FloatFactor.one;
+const Metre32 = Quantity(f32, metre, one, f_one);
+const metre_radian = metre.mul(radian);
+const MetreDegree32 = Quantity(f32, metre_radian, one_over_360, pi);
+
+test "Times" {
+    try testing.expect(Metre32.Times(Degree32) == MetreDegree32);
 }
 
 // test "mul" {
