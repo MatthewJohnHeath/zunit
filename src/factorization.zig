@@ -10,15 +10,18 @@ fn Factor(BaseType: type) type {
     return struct { base: BaseType, power: Fraction };
 }
 
-pub fn Factorization(Type: type, before: fn (lhs: Type, rhs: Type) bool, eq: fn (lhs: Type, rhs: Type) bool) type {
+pub fn Factorization(size : comptime_int, Type: type, before: fn (lhs: Type, rhs: Type) bool, eq: fn (lhs: Type, rhs: Type) bool) type {
     return struct {
-        factors: []const Factor(Type),
+        factors: [size]Factor(Type),
         const Self = @This();
+        const len = size;
 
-        pub const one = Self{ .factors = &.{} };
+        fn OfSize(new_size : comptime_int)type{
+            return Factorization(new_size , Type, before, eq); 
+        }
 
-        pub fn fromBase(base: Type) Self {
-            return .{ .factors = &.{.{ .base = base, .power = Fraction.fromInt(1) }} };
+        pub fn fromBase(base: Type) OfSize(1) {
+            return .{ .factors = .{.{ .base = base, .power = Fraction.fromInt(1) }} };
         }
 
         pub fn eql(comptime self: Self, comptime other: Self) bool {
@@ -36,11 +39,7 @@ pub fn Factorization(Type: type, before: fn (lhs: Type, rhs: Type) bool, eq: fn 
             return true;
         }
 
-        pub fn isOne(self: Self) bool {
-            return self.eql(one);
-        }
-
-        fn mulSize(self: Self, other: Self) comptime_int {
+        fn mulSize(self: Self, other: anytype) comptime_int {
             var self_index = 0;
             var other_index = 0;
             var count = 0;
@@ -76,7 +75,7 @@ pub fn Factorization(Type: type, before: fn (lhs: Type, rhs: Type) bool, eq: fn 
             return count;
         }
 
-        pub fn mul(self: Self, other: Self) Self {
+        pub fn mul(self: Self, other: anytype) OfSize(self.mulSize(other)) {
             var factors: [self.mulSize(other)]Factor(Type) = undefined;
             var self_index = 0;
             var other_index = 0;
@@ -115,85 +114,77 @@ pub fn Factorization(Type: type, before: fn (lhs: Type, rhs: Type) bool, eq: fn 
                     }
                 }
             }
-            return Self{ .factors = &factors };
+            return Self{ .factors = factors };
         }
 
         pub fn reciprocal(self: Self) Self {
             return self.pow(Fraction.fromInt(-1));
         }
 
-        pub fn div(self: Self, other: Self) Self {
+        pub fn div(self: Self, other: anytype) OfSize(self.mulSize(other.reciprocal())) {
             return self.mul(other.reciprocal());
         }
 
-        pub fn pow(self: Self, exponent: Fraction) Self {
+        fn PowType(exponent: Fraction) type{
+            if(exponent.eq(Fraction.fromInt(0))){
+                return OfSize(0);
+            }
+            return Self;
+        }
+        
+        pub fn pow(self: Self, exponent: Fraction) PowType(exponent) {
             if (exponent.eq(Fraction.fromInt(0))) {
-                return Self{ .factors = &.{} };
+                return .{ .factors = .{} };
             }
             const len = self.factors.len;
             comptime var factors: [len]Factor(Type) = undefined;
             for (0..len) |i| {
                 factors[i] = .{ .base = self.factors[i].base, .power = self.factors[i].power.mul(exponent) };
             }
-            return Self{ .factors = &factors };
+            return .{ .factors = factors };
         }
 
-        pub fn powi(self: Self, exponent: comptime_int) Self {
+        pub fn powi(self: Self, exponent: comptime_int) PowType(Fraction.fromInt(exponent)) {
             return self.pow(Fraction.fromInt(exponent));
         }
 
-        pub fn root(self: Self, root_power: comptime_int) Self {
+        pub fn root(self: Self, root_power: comptime_int) Self {// leaving return type as `Self` means 0th power won't compile.
             return self.pow(Fraction.fromInt(root_power).reciprocal());
         }
     };
 }
 
-pub const ComptimeIntFactorization = Factorization(comptime_int, NumberCompare(comptime_int).before, NumberCompare(comptime_int).eql);
-const oneInPrimes = ComptimeIntFactorization{
-    .factors = &.{},
+pub fn ComptimeIntFactorization(size:comptime_int) {
+    return Factorization(size, comptime_int, NumberCompare(comptime_int).before, NumberCompare(comptime_int).eql);
+}
+const oneInPrimes = ComptimeIntFactorization(0){.factors = .{},};
+const twoInPrimes = ComptimeIntFactorization(1){.factors = .{.{ .base = 2, .power = Fraction.fromInt(1) }},};
+const fiveInPrimes = ComptimeIntFactorization(1){
+    .factors = .{.{ .base = 5, .power = Fraction.fromInt(1) }},
 };
-const twoInPrimes = ComptimeIntFactorization{
-    .factors = &.{.{ .base = 2, .power = Fraction.fromInt(1) }},
+const eightInPrimes = ComptimeIntFactorization(1){
+    .factors = .{.{ .base = 2, .power = Fraction.fromInt(3) }},
 };
-const fiveInPrimes = ComptimeIntFactorization{
-    .factors = &.{.{ .base = 5, .power = Fraction.fromInt(1) }},
+const tenInPrimes = ComptimeIntFactorization(2){
+    .factors = .{ .{ .base = 2, .power = Fraction.fromInt(1) }, .{ .base = 5, .power = Fraction.fromInt(1) } },
 };
-const eightInPrimes = ComptimeIntFactorization{
-    .factors = &.{.{ .base = 2, .power = Fraction.fromInt(3) }},
+const oneHundredInPrimes = ComptimeIntFactorization(2){
+    .factors = .{ .{ .base = 2, .power = Fraction.fromInt(2) }, .{ .base = 5, .power = Fraction.fromInt(2) } },
 };
-const tenInPrimes = ComptimeIntFactorization{
-    .factors = &.{ .{ .base = 2, .power = Fraction.fromInt(1) }, .{ .base = 5, .power = Fraction.fromInt(1) } },
-};
-const oneHundredInPrimes = ComptimeIntFactorization{
-    .factors = &.{ .{ .base = 2, .power = Fraction.fromInt(2) }, .{ .base = 5, .power = Fraction.fromInt(2) } },
-};
-const tenthInPrimes = ComptimeIntFactorization{
+const tenthInPrimes = ComptimeIntFactorization(2){
     .factors = &.{ .{ .base = 2, .power = Fraction.fromInt(-1) }, .{ .base = 5, .power = Fraction.fromInt(-1) } },
 };
-const rootTenInPrimes = ComptimeIntFactorization{
-    .factors = &.{ .{ .base = 2, .power = Fraction.init(1, 2) }, .{ .base = 5, .power = Fraction.init(1, 2) } },
+const rootTenInPrimes = ComptimeIntFactorization(2){
+    .factors = .{ .{ .base = 2, .power = Fraction.init(1, 2) }, .{ .base = 5, .power = Fraction.init(1, 2) } },
 };
-const tenRootTenInPrimes = ComptimeIntFactorization{
-    .factors = &.{ .{ .base = 2, .power = Fraction.init(3, 2) }, .{ .base = 5, .power = Fraction.init(3, 2) } },
+const tenRootTenInPrimes = ComptimeIntFactorization(2){
+    .factors = .{ .{ .base = 2, .power = Fraction.init(3, 2) }, .{ .base = 5, .power = Fraction.init(3, 2) } },
 };
 
 test "Factorization eql" {
     comptime {
         try testing.expect(twoInPrimes.eql(twoInPrimes));
-        try testing.expect(!twoInPrimes.eql(tenInPrimes));
-    }
-}
-
-test "Factorization isOne" {
-    comptime {
-        try testing.expect(oneInPrimes.isOne());
-        try testing.expect(!twoInPrimes.isOne());
-    }
-}
-
-test "Factorization fromBase" {
-    comptime {
-        try testing.expect(ComptimeIntFactorization.fromBase(2).eql(twoInPrimes));
+        try testing.expect(!twoInPrimes.eql(eightInPrimes));
     }
 }
 
