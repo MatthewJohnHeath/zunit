@@ -215,6 +215,7 @@ const MetreDegree32 = Quantity(f32, metre_radian, one_over_360, pi);
 
 test "Times" {
     try testing.expect(Metre32.Times(Degree32) == MetreDegree32);
+    try testing.expect(Degree32.Times(Metre32) == MetreDegree32);
 }
 
 test "mul" {
@@ -237,19 +238,39 @@ test "reciprocal" {
     try testing.expect(two_degrees.reciprocal().eq(half_per_degree));
 }
 
-// test "div" {
-//     const meter = baseUnit("meter");
-//     const second = baseUnit("second");
-//     const per_second = invertUnit(second);
-//     const meter_per_second = multiplyUnits(meter, per_second);
-//     const F32Meter = Quantity(f32, meter);
-//     const F16Second = Quantity(f16, second);
-//     const F32MeterPerSecond = Quantity(f32, meter_per_second);
-//     const three_meters = F32Meter.init(3.0);
-//     const two_seconds = F16Second.init(2.0);
-//     const one_point_five_mps = F32MeterPerSecond.init(1.5);
-//     const quotient = three_meters.div(two_seconds);
+const MetrePerDegree32 = Quantity(f32, metre.div(radian), one_over_360.reciprocal(), pi.reciprocal());
 
-//     try testing.expect(quotient.eq(one_point_five_mps));
-//     try testing.expect(@TypeOf(quotient) == F32MeterPerSecond);
+test "Per" {
+    try testing.expect(Metre32.Per(Degree32) == MetrePerDegree32);
+    try testing.expect(Metre32.Per(MetrePerDegree32) == Degree32);
+}
+
+test "div" {
+    const one_metre = Metre32.init(1.0);
+    const two_degrees = Degree32.init(2.0);
+    const half_metre_per_degree = MetrePerDegree32.init(0.5);
+    try testing.expect(one_metre.div(two_degrees).eq(half_metre_per_degree));
+}
+// pub fn Pow(power: Fraction) type {
+//     return Quantity(Scalar, base_units.pow(power), prime_powers.pow(power), float_powers.pow(power));
+// }
+
+// pub fn pow(self: Self, power: Fraction) Pow(power) {
+//     return .{ .value = std.math.pow(self.value, power.toFloat) };
+// }
+
+// pub fn ToThe(power: comptime_int) type {
+//     return Pow(Fraction.fromInt(power));
+// }
+
+// pub fn powi(self: Self, power: comptime_int) ToThe(power) {
+//     return .{ .value = std.math.pow(self.value, power.toFloat) };
+// }
+
+// pub fn Root(power: comptime_int) type {
+//     return Pow(Fraction.init(1, power));
+// }
+
+// pub fn root(self: Self, power: comptime_int) ToThe(power) {
+//     return .{ .value = std.math.pow(self.value, 1.0 / power.toFloat) };
 // }
