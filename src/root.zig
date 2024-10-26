@@ -104,15 +104,15 @@ fn Quantity(comptime ScalarType: type, comptime base_units_in: anytype, comptime
         }
 
         pub fn powi(self: Self, power: comptime_int) ToThe(power) {
-            return .{ .value = std.math.pow(self.value, power.toFloat) };
+            return self.pow(Fraction.fromInt(power));
         }
 
         pub fn Root(power: comptime_int) type {
-            return Pow(Fraction.init(1, power));
+            return Pow(Fraction.fromInt(power).reciprocal());
         }
 
-        pub fn root(self: Self, power: comptime_int) ToThe(power) {
-            return .{ .value = std.math.pow(self.value, 1.0 / power.toFloat) };
+        pub fn root(self: Self, power: comptime_int) Root(power) {
+            return self.pow(Fraction.fromInt(power).reciprocal());
         }
     };
 }
@@ -273,18 +273,40 @@ test "pow" {
     try testing.expect(MetrePerDegree32.init(4.0).pow(three_halves).eq(RootMetrePerDegreeAllCubed32.init(8.0)));
 }
 
-// pub fn ToThe(power: comptime_int) type {
-//     return Pow(Fraction.fromInt(power));
-// }
+test "ToThe" {
+    try testing.expect(MetrePerDegree32.ToThe(2) == MetrePerDegreeAllSquared32);
+    try testing.expect(RootMetrePerDegree32.ToThe(2) == MetrePerDegree32);
+}
 
-// pub fn powi(self: Self, power: comptime_int) ToThe(power) {
-//     return .{ .value = std.math.pow(self.value, power.toFloat) };
-// }
+test "powi" {
+    try testing.expect(MetrePerDegree32.init(2.0).powi(2).eq(MetrePerDegreeAllSquared32.init(4.0)));
+}
 
-// pub fn Root(power: comptime_int) type {
-//     return Pow(Fraction.init(1, power));
-// }
+test "Root" {
+    try testing.expect(MetrePerDegreeAllSquared32.Root(2) == MetrePerDegree32);
+    try testing.expect(MetrePerDegree32.Root(2) == RootMetrePerDegree32);
+}
 
-// pub fn root(self: Self, power: comptime_int) ToThe(power) {
-//     return .{ .value = std.math.pow(self.value, 1.0 / power.toFloat) };
-// }
+test "root" {
+    try testing.expect(MetrePerDegreeAllSquared32.init(4.0).root(2).eq(MetrePerDegree32.init(2.0)));
+}
+
+pub fn Units(FloatType: type) type {
+    return struct {
+        pub fn BaseQuantity(name: []const u8) type {
+            return Quantity(FloatType, BaseUnit.fromBase(name), one, FloatFactor.one);
+        }
+
+        pub fn FractionalPrefix(numerator: comptime_int, denominator: comptime_int) type {
+            return Quantity(FloatType, BaseUnit.one, factorization.fractionInPrimes(Fraction.init(numerator, denominator)), FloatFactor.one);
+        }
+
+        pub fn IntPrefix(number: comptime_int) type {
+            return Quantity(FloatType, BaseUnit.one, factorization.primeFactorization(number), FloatFactor.one);
+        }
+
+        pub fn FloatPrefix(number: comptime_float) type {
+            return Quantity(FloatType, BaseUnit.one, one, FloatFactor.fromBase(number));
+        }
+    };
+}
