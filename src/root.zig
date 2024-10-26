@@ -96,7 +96,7 @@ fn Quantity(comptime ScalarType: type, comptime base_units_in: anytype, comptime
         }
 
         pub fn pow(self: Self, power: Fraction) Pow(power) {
-            return .{ .value = std.math.pow(self.value, power.toFloat) };
+            return .{ .value = std.math.pow(@TypeOf(self.value), self.value, power.toFloat()) };
         }
 
         pub fn ToThe(power: comptime_int) type {
@@ -251,13 +251,27 @@ test "div" {
     const half_metre_per_degree = MetrePerDegree32.init(0.5);
     try testing.expect(one_metre.div(two_degrees).eq(half_metre_per_degree));
 }
-// pub fn Pow(power: Fraction) type {
-//     return Quantity(Scalar, base_units.pow(power), prime_powers.pow(power), float_powers.pow(power));
-// }
 
-// pub fn pow(self: Self, power: Fraction) Pow(power) {
-//     return .{ .value = std.math.pow(self.value, power.toFloat) };
-// }
+const two = Fraction.fromInt(2);
+const MetrePerDegreeAllSquared32 = Quantity(f32, metre.div(radian).pow(two), one_over_360.reciprocal().pow(two), pi.reciprocal().pow(two));
+const half = Fraction.init(1, 2);
+const RootMetrePerDegree32 = Quantity(f32, metre.div(radian).pow(half), one_over_360.reciprocal().pow(half), pi.reciprocal().pow(half));
+const three_halves = Fraction.init(3, 2);
+const RootMetrePerDegreeAllCubed32 =
+    Quantity(f32, metre.div(radian).pow(three_halves), one_over_360.reciprocal().pow(three_halves), pi.reciprocal().pow(three_halves));
+
+test "Pow" {
+    try testing.expect(MetrePerDegree32.Pow(two) == MetrePerDegreeAllSquared32);
+    try testing.expect(MetrePerDegree32.Pow(half) == RootMetrePerDegree32);
+    try testing.expect(MetrePerDegreeAllSquared32.Pow(half) == MetrePerDegree32);
+    try testing.expect(RootMetrePerDegree32.Pow(two) == MetrePerDegree32);
+    try testing.expect(MetrePerDegree32.Pow(three_halves) == RootMetrePerDegreeAllCubed32);
+}
+
+test "pow" {
+    try testing.expect(MetrePerDegree32.init(2.0).pow(two).eq(MetrePerDegreeAllSquared32.init(4.0)));
+    try testing.expect(MetrePerDegree32.init(4.0).pow(three_halves).eq(RootMetrePerDegreeAllCubed32.init(8.0)));
+}
 
 // pub fn ToThe(power: comptime_int) type {
 //     return Pow(Fraction.fromInt(power));
