@@ -10,6 +10,7 @@ pub fn Metre(Scalar: type) type {
 
 test "Metre" {
     try testing.expect(Metre(f16) == Units(f16).BaseQuantity("metre"));
+    try testing.expect(Metre(f16).init(1.0).eq(Units(f16).BaseQuantity("metre").init(1.0)));
 }
 
 pub fn Second(Scalar: type) type {
@@ -58,4 +59,20 @@ pub fn Candela(Scalar: type) type {
 
 test "Candela" {
     try testing.expect(Candela(f16) == Units(f16).BaseQuantity("candela"));
+}
+
+pub fn Radian(Scalar: type) type {
+    return Units(Scalar).BaseQuantity("radian");
+}
+
+test "Radian" {
+    try testing.expect(Radian(f16) == Units(f16).BaseQuantity("radian"));
+}
+
+pub fn Rot(Scalar: type) type {
+    return Radian(Scalar).Times(Units(Scalar).FloatPrefix(2.0 * std.math.pi));
+}
+
+pub fn Degree(Scalar: type) type {
+    return Rot(Scalar).Times(Units(Scalar).IntPrefix(360).reciprocal());
 }
