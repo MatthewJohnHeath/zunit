@@ -20,6 +20,13 @@ fn Quantity(comptime ScalarType: type, comptime base_units_in: anytype, comptime
             return Self{ .value = val };
         }
 
+        fn WithScalarType(NewScalar: type) type {
+            return Quantity(NewScalar, base_units, prime_powers, float_powers);
+        }
+
+        fn sameExceptScalar(Other: type) bool {
+            return Other == Quantity(Other.Scalar, base_units, prime_powers, float_powers);
+        }
         pub fn eq(this: Self, other: Self) bool {
             return this.value == other.value;
         }
@@ -125,6 +132,22 @@ const radian = BaseUnit.fromBase("radian");
 const one_over_360 = factorization.primeFactorization(180).reciprocal();
 const pi = FloatFactor.fromBase(std.math.pi);
 const Degree32 = Quantity(f32, radian, one_over_360, pi);
+const Degree16 = Quantity(f16, radian, one_over_360, pi);
+
+const metre = BaseUnit.fromBase("metre");
+const one = factorization.primeFactorization(1);
+const f_one = FloatFactor.one;
+const Metre32 = Quantity(f32, metre, one, f_one);
+
+test "WithScalarType" {
+    try testing.expect(Degree32.WithScalarType(f16) == Degree16);
+}
+
+test "sameExceptScalar" {
+    try testing.expect(Degree32.sameExceptScalar(Degree16));
+    try testing.expect(Degree32.sameExceptScalar(Degree32));
+    try testing.expect(!Degree32.sameExceptScalar(Metre32));
+}
 
 test "eq" {
     const oneDegree = Degree32.init(1.0);
@@ -206,10 +229,6 @@ test "sub" {
     try testing.expect(difference.eq(minusOneDegree));
 }
 
-const metre = BaseUnit.fromBase("metre");
-const one = factorization.primeFactorization(1);
-const f_one = FloatFactor.one;
-const Metre32 = Quantity(f32, metre, one, f_one);
 const metre_radian = metre.mul(radian);
 const MetreDegree32 = Quantity(f32, metre_radian, one_over_360, pi);
 
@@ -319,5 +338,6 @@ test "FractionalPrefix" {
     const Milli = Units(f32).FractionalPrefix(1, 1000);
 
     try testing.expect(Milli.base_units.eql(BaseUnit.one));
-    try testing.expect(Milli.prime_powers.factors.len == 2);
+    const prime_factors = Milli.prime_powers.factors;
+    try testing.expect(prime_factors.len == 2);
 }
