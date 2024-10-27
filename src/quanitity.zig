@@ -206,7 +206,7 @@ test "sub" {
     try testing.expect(difference.eq(minusOneDegree));
 }
 
-const metre = BaseUnit.fromBase("radian");
+const metre = BaseUnit.fromBase("metre");
 const one = factorization.primeFactorization(1);
 const f_one = FloatFactor.one;
 const Metre32 = Quantity(f32, metre, one, f_one);
@@ -309,4 +309,15 @@ pub fn Units(FloatType: type) type {
             return Quantity(FloatType, BaseUnit.one, one, FloatFactor.fromBase(number));
         }
     };
+}
+
+test "BaseUnits" {
+    try testing.expect(Units(f32).BaseQuantity("metre") == Metre32);
+}
+
+test "FractionalPrefix" {
+    const Milli = Units(f32).FractionalPrefix(1, 1000);
+
+    try testing.expect(Milli.base_units.eql(BaseUnit.one));
+    try testing.expect(Milli.prime_powers.factors.len == 2);
 }
