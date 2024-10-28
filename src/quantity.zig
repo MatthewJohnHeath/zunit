@@ -131,6 +131,11 @@ fn Quantity(comptime ScalarType: type, comptime base_units_in: anytype, comptime
             return self.pow(Fraction.fromInt(power).reciprocal());
         }
 
+        // pub fn covert()void{
+        //     if (! comptime other.){
+        //         @compileError("It is not permitted to call " ++ function_name ++ " except on Quantity types with the same units");
+        //     }
+        // }
     };
 }
 
@@ -165,6 +170,8 @@ test "eq" {
     try testing.expect(oneDegree.eq(Degree16.init(1.0)));
     try testing.expect(!oneDegree.eq(Degree32.init(2.0)));
     try testing.expect(!oneDegree.eq(Degree16.init(0.0)));
+    // Uncommenting will caused compile error. 
+    // try testing.expect(!oneDegree.eq(Metre32.init(1.0)));
 }
 
 test "neq" {
@@ -173,6 +180,7 @@ test "neq" {
     try testing.expect(!oneDegree.neq(oneDegree));
     try testing.expect(oneDegree.neq(Degree16.init(2.0)));
     try testing.expect(oneDegree.neq(Degree32.init(2.0)));
+
 }
 
 test "lt" {
@@ -320,6 +328,10 @@ test "Root" {
 test "root" {
     try testing.expect(MetrePerDegreeAllSquared32.init(4.0).root(2).eq(MetrePerDegree32.init(2.0)));
 }
+
+// test "sameDimensions"{
+//     try testing.expect(Quantity(f16, radian, one, f_one).sameDimensions(Degree32.init(1.0)));
+// }
 
 pub fn Units(FloatType: type) type {
     return struct {
