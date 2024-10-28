@@ -152,6 +152,15 @@ pub fn Factorization(size: comptime_int, Type: type, before: fn (lhs: Type, rhs:
         pub fn root(self: Self, root_power: comptime_int) Self { // leaving return type as `Self` means 0th power won't compile.
             return self.pow(Fraction.fromInt(root_power).reciprocal());
         }
+
+        pub fn toFloat(self:Self) f64{
+            comptime var product = 1.0;
+            for(self.factors)|factor|{
+                const base = if(@TypeOf(factor.base) == comptime_int) @as(f64, factor.base)  else factor.base;
+                product = product * std.math.pow(f64, base, factor.power.toFloat());
+            } 
+            return product;
+        }
     };
 }
 
@@ -242,6 +251,16 @@ test "Factorization root" {
     }
 }
 
+test "Factorization toFloat" {
+    comptime {
+        try testing.expect(eightInPrimes.toFloat() == 8.0);
+        const float_compare = compare.NumberCompare(comptime_float);
+        const FloatFactor = Factorization(1, comptime_float, float_compare.before, float_compare.eql);
+        const weirdOne = FloatFactor.fromBase(2.0).reciprocal().mul( FloatFactor.fromBase(4.0).root(2)) ;
+        try testing.expect(weirdOne.toFloat() == 1.0);
+    }
+}
+
 fn distinctPrimeFactorCount(number: comptime_int) comptime_int {
     comptime var remaining = number;
     comptime var count = 0;
@@ -311,3 +330,4 @@ test "fractionInPrimes" {
         try testing.expect(fractionInPrimes(Fraction.init(1, 10)).eql(tenthInPrimes));
     }
 }
+
