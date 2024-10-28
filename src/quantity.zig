@@ -24,14 +24,23 @@ fn Quantity(comptime ScalarType: type, comptime base_units_in: anytype, comptime
             return Quantity(NewScalar, base_units, prime_powers, float_powers);
         }
 
-        fn sameExceptScalar(Other: type) bool {
-            return Other == Quantity(Other.Scalar, base_units, prime_powers, float_powers);
+        fn sameUnits(Other: type) bool {
+            return Other == WithScalarType(Other.Scalar);
         }
-        pub fn eq(this: Self, other: Self) bool {
+
+        fn assertSameUnits(other: anytype, comptime function_name: [] const u8 )void{
+            if (! comptime sameUnits(@TypeOf(other))){
+                @compileError("It is not permitted to call " ++ function_name ++ " except on Quantity types with the same units");
+            }
+        }
+
+        pub fn eq(this: Self, other: anytype) bool {
+            assertSameUnits(other, "eq");
             return this.value == other.value;
         }
 
-        pub fn neq(this: Self, other: Self) bool {
+        pub fn neq(this: Self, other: anytype) bool {
+            assertSameUnits(other, "neq");   
             return !this.eq(other);
         }
 
@@ -143,10 +152,10 @@ test "WithScalarType" {
     try testing.expect(Degree32.WithScalarType(f16) == Degree16);
 }
 
-test "sameExceptScalar" {
-    try testing.expect(Degree32.sameExceptScalar(Degree16));
-    try testing.expect(Degree32.sameExceptScalar(Degree32));
-    try testing.expect(!Degree32.sameExceptScalar(Metre32));
+test "sameUnits" {
+    try testing.expect(Degree32.sameUnits(Degree16));
+    try testing.expect(Degree32.sameUnits(Degree32));
+    try testing.expect(!Degree32.sameUnits(Metre32));
 }
 
 test "eq" {
