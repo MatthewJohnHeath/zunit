@@ -85,3 +85,23 @@ pub fn Rot(Scalar: type) type {
 pub fn Degree(Scalar: type) type {
     return Rot(Scalar).Times(Units(Scalar).IntPrefix(360).reciprocal());
 }
+
+pub fn Pixel(Scalar: type) type {
+    return Units(Scalar).BaseQuantity("pixel");
+}
+
+pub fn Bit(Scalar: type) type {
+    return Units(Scalar).BaseQuantity("bit");
+}
+
+pub fn Bi(Scalar: type) type {
+    return Units(Scalar).IntPrefix(2);
+}
+
+pub fn Octo(Scalar: type) type {
+    return Bi(Scalar).ToThe(3);
+}
+
+pub fn Byte(Scalar: type) type {
+    return Octo(Scalar).Times(Bit(Scalar));
+}
