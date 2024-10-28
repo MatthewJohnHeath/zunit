@@ -44,19 +44,23 @@ fn Quantity(comptime ScalarType: type, comptime base_units_in: anytype, comptime
             return !this.eq(other);
         }
 
-        pub fn lt(this: Self, other: Self) bool {
+        pub fn lt(this: Self, other: anytype) bool {
+            assertSameUnits(other, "lt");
             return this.value < other.value;
         }
 
-        pub fn gt(this: Self, other: Self) bool {
+        pub fn gt(this: Self, other: anytype) bool {
+            assertSameUnits(other, "gt");
             return other.lt(this);
         }
 
-        pub fn le(this: Self, other: Self) bool {
+        pub fn le(this: Self, other: anytype) bool {
+            assertSameUnits(other, "le");
             return !this.gt(other);
         }
 
-        pub fn ge(this: Self, other: Self) bool {
+        pub fn ge(this: Self, other: anytype) bool {
+            assertSameUnits(other, "ge");
             return !this.lt(other);
         }
 
