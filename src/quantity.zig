@@ -73,7 +73,7 @@ fn Quantity(comptime ScalarType: type, comptime base_units_in: anytype, comptime
             return .{.value = this.value + other.value,};
         }
 
-        pub fn sub(this: Self, other: Self) WithScalarType(@TypeOf(this.value, other.value)) {
+        pub fn sub(this: Self, other: anytype) WithScalarType(@TypeOf(this.value, other.value)) {
             assertSameUnits(other, "sub");
             return .{.value = this.value - other.value,};
         }
@@ -130,6 +130,7 @@ fn Quantity(comptime ScalarType: type, comptime base_units_in: anytype, comptime
         pub fn root(self: Self, power: comptime_int) Root(power) {
             return self.pow(Fraction.fromInt(power).reciprocal());
         }
+
     };
 }
 
@@ -160,32 +161,33 @@ test "sameUnits" {
 
 test "eq" {
     const oneDegree = Degree32.init(1.0);
-    const twoDegrees = Degree32.init(2.0);
-
     try testing.expect(oneDegree.eq(oneDegree));
-    try testing.expect(!oneDegree.eq(twoDegrees));
+    try testing.expect(oneDegree.eq(Degree16.init(1.0)));
+    try testing.expect(!oneDegree.eq(Degree32.init(2.0)));
+    try testing.expect(!oneDegree.eq(Degree16.init(0.0)));
 }
 
 test "neq" {
     const oneDegree = Degree32.init(1.0);
-    const twoDegrees = Degree32.init(2.0);
 
     try testing.expect(!oneDegree.neq(oneDegree));
-    try testing.expect(oneDegree.neq(twoDegrees));
+    try testing.expect(oneDegree.neq(Degree16.init(2.0)));
+    try testing.expect(oneDegree.neq(Degree32.init(2.0)));
 }
 
 test "lt" {
     const oneDegree = Degree32.init(1.0);
-    const twoDegrees = Degree32.init(2.0);
+    const twoDegrees = Degree16.init(2.0);
 
     try testing.expect(oneDegree.lt(twoDegrees));
+    try testing.expect(oneDegree.lt(Degree16.init(2.0)));
     try testing.expect(!twoDegrees.lt(oneDegree));
     try testing.expect(!oneDegree.lt(oneDegree));
 }
 
 test "gt" {
     const oneDegree = Degree32.init(1.0);
-    const twoDegrees = Degree32.init(2.0);
+    const twoDegrees = Degree16.init(2.0);
 
     try testing.expect(!oneDegree.gt(twoDegrees));
     try testing.expect(twoDegrees.gt(oneDegree));
@@ -194,7 +196,7 @@ test "gt" {
 
 test "le" {
     const oneDegree = Degree32.init(1.0);
-    const twoDegrees = Degree32.init(2.0);
+    const twoDegrees = Degree16.init(2.0);
 
     try testing.expect(oneDegree.le(twoDegrees));
     try testing.expect(!twoDegrees.le(oneDegree));
@@ -203,7 +205,7 @@ test "le" {
 
 test "ge" {
     const oneDegree = Degree32.init(1.0);
-    const twoDegrees = Degree32.init(2.0);
+    const twoDegrees = Degree16.init(2.0);
 
     try testing.expect(!oneDegree.ge(twoDegrees));
     try testing.expect(twoDegrees.ge(oneDegree));
@@ -212,7 +214,7 @@ test "ge" {
 
 test "neg" {
     const oneDegree = Degree32.init(1.0);
-    const minusOneDegree = Degree32.init(-1.0);
+    const minusOneDegree = Degree16.init(-1.0);
 
     try testing.expect(oneDegree.neg().eq(minusOneDegree));
     try testing.expect(minusOneDegree.neg().eq(oneDegree));
@@ -220,7 +222,7 @@ test "neg" {
 
 test "add" {
     const oneDegree = Degree32.init(1.0);
-    const twoDegrees = Degree32.init(2.0);
+    const twoDegrees = Degree16.init(2.0);
     const threeDegrees = Degree32.init(3.0);
 
     const sum = oneDegree.add(twoDegrees);
@@ -230,7 +232,7 @@ test "add" {
 
 test "sub" {
     const oneDegree = Degree32.init(1.0);
-    const twoDegrees = Degree32.init(2.0);
+    const twoDegrees = Degree16.init(2.0);
     const minusOneDegree = Degree32.init(-1.0);
 
     const difference = oneDegree.sub(twoDegrees);
