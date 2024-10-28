@@ -65,21 +65,17 @@ fn Quantity(comptime ScalarType: type, comptime base_units_in: anytype, comptime
         }
 
         pub fn neg(this: Self) Self {
-            return Self{
-                .value = -this.value,
-            };
+            return Self{.value = -this.value,};
         }
 
-        pub fn add(this: Self, other: Self) Self {
-            return .{
-                .value = this.value + other.value,
-            };
+        pub fn add(this: Self, other: anytype) WithScalarType(@TypeOf(this.value, other.value)) {
+            assertSameUnits(other, "add");
+            return .{.value = this.value + other.value,};
         }
 
-        pub fn sub(this: Self, other: Self) Self {
-            return .{
-                .value = this.value - other.value,
-            };
+        pub fn sub(this: Self, other: Self) WithScalarType(@TypeOf(this.value, other.value)) {
+            assertSameUnits(other, "sub");
+            return .{.value = this.value - other.value,};
         }
 
         pub fn Times(Other: type) type {
