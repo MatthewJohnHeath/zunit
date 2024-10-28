@@ -13,6 +13,15 @@ test "Metre" {
     try testing.expect(Metre(f16).init(1.0).eq(Units(f16).BaseQuantity("metre").init(1.0)));
 }
 
+pub fn metres(value: anytype) Metre(@TypeOf(value)) {
+    return Metre(@TypeOf(value)).init(value);
+}
+
+test "metres" {
+    const val: f32 = 1337;
+    try testing.expect(metres(val).eq(Metre(f16).init(val)));
+}
+
 pub fn Second(Scalar: type) type {
     return Units(Scalar).BaseQuantity("second");
 }

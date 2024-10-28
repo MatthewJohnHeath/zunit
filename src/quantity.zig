@@ -28,8 +28,8 @@ fn Quantity(comptime ScalarType: type, comptime base_units_in: anytype, comptime
             return Other == WithScalarType(Other.Scalar);
         }
 
-        fn assertSameUnits(other: anytype, comptime function_name: [] const u8 )void{
-            if (! comptime sameUnits(@TypeOf(other))){
+        fn assertSameUnits(other: anytype, comptime function_name: []const u8) void {
+            if (!comptime sameUnits(@TypeOf(other))) {
                 @compileError("It is not permitted to call " ++ function_name ++ " except on Quantity types with the same units");
             }
         }
@@ -40,7 +40,7 @@ fn Quantity(comptime ScalarType: type, comptime base_units_in: anytype, comptime
         }
 
         pub fn neq(this: Self, other: anytype) bool {
-            assertSameUnits(other, "neq");   
+            assertSameUnits(other, "neq");
             return !this.eq(other);
         }
 
@@ -65,17 +65,23 @@ fn Quantity(comptime ScalarType: type, comptime base_units_in: anytype, comptime
         }
 
         pub fn neg(this: Self) Self {
-            return Self{.value = -this.value,};
+            return Self{
+                .value = -this.value,
+            };
         }
 
         pub fn add(this: Self, other: anytype) WithScalarType(@TypeOf(this.value, other.value)) {
             assertSameUnits(other, "add");
-            return .{.value = this.value + other.value,};
+            return .{
+                .value = this.value + other.value,
+            };
         }
 
         pub fn sub(this: Self, other: anytype) WithScalarType(@TypeOf(this.value, other.value)) {
             assertSameUnits(other, "sub");
-            return .{.value = this.value - other.value,};
+            return .{
+                .value = this.value - other.value,
+            };
         }
 
         pub fn Times(Other: type) type {
@@ -131,11 +137,12 @@ fn Quantity(comptime ScalarType: type, comptime base_units_in: anytype, comptime
             return self.pow(Fraction.fromInt(power).reciprocal());
         }
 
-        // pub fn covert()void{
-        //     if (! comptime other.){
-        //         @compileError("It is not permitted to call " ++ function_name ++ " except on Quantity types with the same units");
-        //     }
-        // }
+        pub fn convert(self: Self, OtherType: type) OtherType {
+            const QuotientType = Self.Per(OtherType);
+            const multiple = comptime QuotientType.prime_powers.toFloat() * QuotientType.float_powers.toFloat();
+            const converted_value = self.value * multiple;
+            return .{ .value = @floatCast(converted_value) };
+        }
     };
 }
 
@@ -144,10 +151,10 @@ const float_compare = compare.NumberCompare(comptime_float);
 const FloatFactor = factorization.Factorization(1, comptime_float, float_compare.before, float_compare.eql);
 
 const radian = BaseUnit.fromBase("radian");
-const one_over_360 = factorization.primeFactorization(180).reciprocal();
+const one_over_180 = factorization.primeFactorization(180).reciprocal();
 const pi = FloatFactor.fromBase(std.math.pi);
-const Degree32 = Quantity(f32, radian, one_over_360, pi);
-const Degree16 = Quantity(f16, radian, one_over_360, pi);
+const Degree32 = Quantity(f32, radian, one_over_180, pi);
+const Degree16 = Quantity(f16, radian, one_over_180, pi);
 
 const metre = BaseUnit.fromBase("metre");
 const one = factorization.primeFactorization(1);
@@ -170,7 +177,7 @@ test "eq" {
     try testing.expect(oneDegree.eq(Degree16.init(1.0)));
     try testing.expect(!oneDegree.eq(Degree32.init(2.0)));
     try testing.expect(!oneDegree.eq(Degree16.init(0.0)));
-    // Uncommenting will caused compile error. 
+    // Uncommenting will caused compile error.
     // try testing.expect(!oneDegree.eq(Metre32.init(1.0)));
 }
 
@@ -180,7 +187,6 @@ test "neq" {
     try testing.expect(!oneDegree.neq(oneDegree));
     try testing.expect(oneDegree.neq(Degree16.init(2.0)));
     try testing.expect(oneDegree.neq(Degree32.init(2.0)));
-
 }
 
 test "lt" {
@@ -249,7 +255,7 @@ test "sub" {
 }
 
 const metre_radian = metre.mul(radian);
-const MetreDegree32 = Quantity(f32, metre_radian, one_over_360, pi);
+const MetreDegree32 = Quantity(f32, metre_radian, one_over_180, pi);
 
 test "Times" {
     try testing.expect(Metre32.Times(Degree32) == MetreDegree32);
@@ -276,7 +282,7 @@ test "reciprocal" {
     try testing.expect(two_degrees.reciprocal().eq(half_per_degree));
 }
 
-const MetrePerDegree32 = Quantity(f32, metre.div(radian), one_over_360.reciprocal(), pi.reciprocal());
+const MetrePerDegree32 = Quantity(f32, metre.div(radian), one_over_180.reciprocal(), pi.reciprocal());
 
 test "Per" {
     try testing.expect(Metre32.Per(Degree32) == MetrePerDegree32);
@@ -291,12 +297,13 @@ test "div" {
 }
 
 const two = Fraction.fromInt(2);
-const MetrePerDegreeAllSquared32 = Quantity(f32, metre.div(radian).pow(two), one_over_360.reciprocal().pow(two), pi.reciprocal().pow(two));
+const MetrePerDegreeAllSquared32 = Quantity(f32, metre.div(radian).pow(two), one_over_180.reciprocal().pow(two), pi.reciprocal().pow(two));
 const half = Fraction.init(1, 2);
-const RootMetrePerDegree32 = Quantity(f32, metre.div(radian).pow(half), one_over_360.reciprocal().pow(half), pi.reciprocal().pow(half));
+const RootMetrePerDegree32 = Quantity(f32, metre.div(radian).pow(half), one_over_180.reciprocal().pow(half), pi.reciprocal().pow(half));
 const three_halves = Fraction.init(3, 2);
 const RootMetrePerDegreeAllCubed32 =
-    Quantity(f32, metre.div(radian).pow(three_halves), one_over_360.reciprocal().pow(three_halves), pi.reciprocal().pow(three_halves));
+    Quantity(f32, metre.div(radian).pow(three_halves), one_over_180
+    .reciprocal().pow(three_halves), pi.reciprocal().pow(three_halves));
 
 test "Pow" {
     try testing.expect(MetrePerDegree32.Pow(two) == MetrePerDegreeAllSquared32);
@@ -329,9 +336,11 @@ test "root" {
     try testing.expect(MetrePerDegreeAllSquared32.init(4.0).root(2).eq(MetrePerDegree32.init(2.0)));
 }
 
-// test "sameDimensions"{
-//     try testing.expect(Quantity(f16, radian, one, f_one).sameDimensions(Degree32.init(1.0)));
-// }
+test "convert" {
+    const Radian32 = Quantity(f32, radian, one, f_one);
+    const epsilon = 0.0000001;
+    try testing.expect(std.math.approxEqAbs(f32, Degree32.init(180.0).convert(Radian32).value, Radian32.init(std.math.pi).value, epsilon));
+}
 
 pub fn Units(FloatType: type) type {
     return struct {
