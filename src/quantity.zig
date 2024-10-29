@@ -5,15 +5,18 @@ const compare = @import("compare.zig");
 const fraction = @import("comptime_fraction.zig");
 
 const Fraction = fraction.ComptimeFraction;
+const BaseUnitFactor = factorization.Factorization(1, []const u8, compare.string_before, compare.string_eql);
+const float_compare = compare.NumberCompare(comptime_float);
+const FloatFactor = factorization.Factorization(1, comptime_float, float_compare.before, float_compare.eql);
 
 const one = factorization.primeFactorization(1);
 
 pub fn BaseUnit(name: []const u8) type {
-    return Unit(BaseUnit.fromBase(name), one, FloatFactor.one);
+    return Unit(BaseUnitFactor.fromBase(name), one, FloatFactor.one);
 }
 
 pub fn FractionalPrefix(numerator: comptime_int, denominator: comptime_int) type {
-    return Unit(BaseUnit.one, factorization.fractionInPrimes(Fraction.init(numerator, denominator)), FloatFactor.one);
+    return Unit(BaseUnitFactor.one, factorization.fractionInPrimes(Fraction.init(numerator, denominator)), FloatFactor.one);
 }
 
 pub fn IntPrefix(number: comptime_int) type {
@@ -172,10 +175,6 @@ fn Unit(comptime base_units_in: anytype, comptime prime_powers_in: anytype, comp
         }
     };
 }
-
-const BaseUnitFactor = factorization.Factorization(1, []const u8, compare.string_before, compare.string_eql);
-const float_compare = compare.NumberCompare(comptime_float);
-const FloatFactor = factorization.Factorization(1, comptime_float, float_compare.before, float_compare.eql);
 
 const radian = BaseUnitFactor.fromBase("radian");
 const one_over_180 = factorization.primeFactorization(180).reciprocal();

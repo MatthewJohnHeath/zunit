@@ -2,106 +2,41 @@ const std = @import("std");
 const testing = std.testing;
 const quantity = @import("quantity.zig");
 
-const Units = quantity.Units;
+pub const Metre = quantity.BaseUnit("metre");
 
-pub fn Metre(Scalar: type) type {
-    return Units(Scalar).BaseQuantity("metre");
-}
-
-test "Metre" {
-    try testing.expect(Metre(f16) == Units(f16).BaseQuantity("metre"));
-    try testing.expect(Metre(f16).init(1.0).eq(Units(f16).BaseQuantity("metre").init(1.0)));
-}
-
-pub fn metres(value: anytype) Metre(@TypeOf(value)) {
-    return Metre(@TypeOf(value)).init(value);
-}
+pub const metres = Metre.times;
 
 test "metres" {
-    const val: f32 = 1337;
-    try testing.expect(metres(val).eq(Metre(f16).init(val)));
+    const two: f32 = 2.0;
+    const two_metres = metres(two);
+    try testing.expect(two_metres.value == two);
+    try testing.expect(@TypeOf(two_metres) == Metre.Of(f32));
 }
 
-pub fn Second(Scalar: type) type {
-    return Units(Scalar).BaseQuantity("second");
-}
+pub const Second = quantity.BaseUnit("second");
 
-test "Second" {
-    try testing.expect(Second(f16) == Units(f16).BaseQuantity("second"));
-}
+pub const Kilogram = quantity.BaseUnit("kilogram");
 
-pub fn Kilogram(Scalar: type) type {
-    return Units(Scalar).BaseQuantity("kilogram");
-}
+pub const Ampere = quantity.BaseUnit("ampere");
 
-test "Kilogram" {
-    try testing.expect(Kilogram(f16) == Units(f16).BaseQuantity("kilogram"));
-}
+pub const Kelvin = quantity.BaseUnit("kelvin");
 
-pub fn Ampere(Scalar: type) type {
-    return Units(Scalar).BaseQuantity("ampere");
-}
+pub const Mole = quantity.BaseUnit("mole");
 
-test "Ampere" {
-    try testing.expect(Ampere(f16) == Units(f16).BaseQuantity("ampere"));
-}
+pub const Candela = quantity.BaseUnit("candela");
 
-pub fn Kelvin(Scalar: type) type {
-    return Units(Scalar).BaseQuantity("kelvin");
-}
+pub const Radian = quantity.BaseUnit("radian");
 
-test "Kelvin" {
-    try testing.expect(Kelvin(f16) == Units(f16).BaseQuantity("kelvin"));
-}
+pub const Rot = Radian.Times(quantity.FloatPrefix(2.0 * std.math.pi));
 
-pub fn Mole(Scalar: type) type {
-    return Units(Scalar).BaseQuantity("mole");
-}
+pub const Degree = Rot.Times(quantity.IntPrefix(360).reciprocal());
 
-test "Mole" {
-    try testing.expect(Mole(f16) == Units(f16).BaseQuantity("mole"));
-}
+pub const Pixel = quantity.BaseUnit("pixel");
 
-pub fn Candela(Scalar: type) type {
-    return Units(Scalar).BaseQuantity("candela");
-}
+pub const Bit = quantity.BaseUnit("bit");
 
-test "Candela" {
-    try testing.expect(Candela(f16) == Units(f16).BaseQuantity("candela"));
-}
+const Bi = quantity.IntPrefix(2);
 
-pub fn Radian(Scalar: type) type {
-    return Units(Scalar).BaseQuantity("radian");
-}
+const Octo = Bi.ToThe(3);
 
-test "Radian" {
-    try testing.expect(Radian(f16) == Units(f16).BaseQuantity("radian"));
-}
-
-pub fn Rot(Scalar: type) type {
-    return Radian(Scalar).Times(Units(Scalar).FloatPrefix(2.0 * std.math.pi));
-}
-
-pub fn Degree(Scalar: type) type {
-    return Rot(Scalar).Times(Units(Scalar).IntPrefix(360).reciprocal());
-}
-
-pub fn Pixel(Scalar: type) type {
-    return Units(Scalar).BaseQuantity("pixel");
-}
-
-pub fn Bit(Scalar: type) type {
-    return Units(Scalar).BaseQuantity("bit");
-}
-
-pub fn Bi(Scalar: type) type {
-    return Units(Scalar).IntPrefix(2);
-}
-
-pub fn Octo(Scalar: type) type {
-    return Bi(Scalar).ToThe(3);
-}
-
-pub fn Byte(Scalar: type) type {
-    return Octo(Scalar).Times(Bit(Scalar));
-}
+pub const Byte = Octo.Times(Bit);
