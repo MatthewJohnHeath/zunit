@@ -6,7 +6,7 @@ const fraction = @import("comptime_fraction.zig");
 
 const Fraction = fraction.ComptimeFraction;
 
-pub fn BaseQuantity(name: []const u8) type {
+pub fn BaseUnit(name: []const u8) type {
     return Unit(BaseUnit.fromBase(name), one, FloatFactor.one);
 }
 
@@ -55,7 +55,11 @@ fn Unit(comptime base_units_in: anytype, comptime prime_powers_in: anytype, comp
             return Pow(Fraction.fromInt(power).reciprocal());
         }
 
-        pub fn Quantity(Scalar: type) type {
+        pub fn times(value: anytype) Of(@TypeOf(value)) {
+            return .{ .value = value };
+        }
+
+        pub fn Of(Scalar: type) type {
             return struct {
                 value: Scalar,
 
@@ -107,19 +111,19 @@ fn Unit(comptime base_units_in: anytype, comptime prime_powers_in: anytype, comp
                 }
 
                 pub fn neg(self: Self) Self {
-                    return Self{
+                    return .{
                         .value = -self.value,
                     };
                 }
 
-                pub fn add(self: Self, other: anytype) Quantity(@TypeOf(self.value, other.value)) {
+                pub fn add(self: Self, other: anytype) Of(@TypeOf(self.value, other.value)) {
                     assertSameUnits(other, "add");
                     return .{
                         .value = self.value + other.value,
                     };
                 }
 
-                pub fn sub(self: Self, other: anytype) Quantity(@TypeOf(self.value, other.value)) {
+                pub fn sub(self: Self, other: anytype) Of(@TypeOf(self.value, other.value)) {
                     assertSameUnits(other, "sub");
                     return .{
                         .value = self.value - other.value,
@@ -129,14 +133,14 @@ fn Unit(comptime base_units_in: anytype, comptime prime_powers_in: anytype, comp
                 fn MulType(Other: type) type {
                     const self: Self = undefined;
                     const other: Other = undefined;
-                    return Times(Other.UnitType).Quantity(@TypeOf(self.value, other.value));
+                    return Times(Other.UnitType).Of(@TypeOf(self.value, other.value));
                 }
 
                 pub fn mul(self: Self, other: anytype) MulType(@TypeOf(other)) {
                     return .{ .value = self.value * other.value };
                 }
 
-                pub fn reciprocal(self: Self) Reciprocal.Quantity(Scalar) {
+                pub fn reciprocal(self: Self) Reciprocal.Of(Scalar) {
                     return .{ .value = 1.0 / self.value };
                 }
 
@@ -167,20 +171,20 @@ fn Unit(comptime base_units_in: anytype, comptime prime_powers_in: anytype, comp
     };
 }
 
-const BaseUnit = factorization.Factorization(1, []const u8, compare.string_before, compare.string_eql);
+const BaseUnitFactor = factorization.Factorization(1, []const u8, compare.string_before, compare.string_eql);
 const float_compare = compare.NumberCompare(comptime_float);
 const FloatFactor = factorization.Factorization(1, comptime_float, float_compare.before, float_compare.eql);
 
-const radian = BaseUnit.fromBase("radian");
+const radian = BaseUnitFactor.fromBase("radian");
 const one_over_180 = factorization.primeFactorization(180).reciprocal();
 const pi = FloatFactor.fromBase(std.math.pi);
-const Degree32 = Unit(radian, one_over_180, pi).Quantity(f32);
-const Degree16 = Unit(radian, one_over_180, pi).Quantity(f16);
+const Degree32 = Unit(radian, one_over_180, pi).Of(f32);
+const Degree16 = Unit(radian, one_over_180, pi).Of(f16);
 
-const metre = BaseUnit.fromBase("metre");
+const metre = BaseUnitFactor.fromBase("metre");
 const one = factorization.primeFactorization(1);
 const f_one = FloatFactor.one;
-const Metre32 = Unit(metre, one, f_one).Quantity(f32);
+const Metre32 = Unit(metre, one, f_one).Of(f32);
 
 test "sameUnits" {
     try testing.expect(Degree32.sameUnits(Degree16));
@@ -272,7 +276,7 @@ test "sub" {
 }
 
 const metre_radian = metre.mul(radian);
-const MetreDegree32 = Unit(metre_radian, one_over_180, pi).Quantity(f32);
+const MetreDegree32 = Unit(metre_radian, one_over_180, pi).Of(f32);
 
 // test "Times" {
 //     try testing.expect(Metre32.Times(Degree32) == MetreDegree32);
@@ -287,7 +291,7 @@ test "mul" {
     try testing.expect(two_metres.mul(three_degrees).eql(six_degree_metres));
 }
 
-const PerDegree32 = Unit(radian.reciprocal(), factorization.primeFactorization(180), pi.reciprocal()).Quantity(f32);
+const PerDegree32 = Unit(radian.reciprocal(), factorization.primeFactorization(180), pi.reciprocal()).Of(f32);
 
 // test "Reciprocal" {
 //     try testing.expect(Degree32.Reciprocal == PerDegree32);
