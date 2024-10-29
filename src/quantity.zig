@@ -6,6 +6,8 @@ const fraction = @import("comptime_fraction.zig");
 
 const Fraction = fraction.ComptimeFraction;
 
+const one = factorization.primeFactorization(1);
+
 pub fn BaseUnit(name: []const u8) type {
     return Unit(BaseUnit.fromBase(name), one, FloatFactor.one);
 }
@@ -15,7 +17,7 @@ pub fn FractionalPrefix(numerator: comptime_int, denominator: comptime_int) type
 }
 
 pub fn IntPrefix(number: comptime_int) type {
-    return Unit(BaseUnit.one, factorization.primeFactorization(number), FloatFactor.one);
+    return FractionalPrefix(Fraction.fromInt(number));
 }
 
 pub fn FloatPrefix(number: comptime_float) type {
@@ -182,7 +184,6 @@ const Degree32 = Unit(radian, one_over_180, pi).Of(f32);
 const Degree16 = Unit(radian, one_over_180, pi).Of(f16);
 
 const metre = BaseUnitFactor.fromBase("metre");
-const one = factorization.primeFactorization(1);
 const f_one = FloatFactor.one;
 const Metre32 = Unit(metre, one, f_one).Of(f32);
 
