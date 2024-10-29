@@ -6,15 +6,12 @@ const fraction = @import("comptime_fraction.zig");
 
 const Fraction = fraction.ComptimeFraction;
 
-fn Unit(comptime ScalarType: type, comptime base_units_in: anytype, comptime prime_powers_in: anytype, comptime float_powers_in: anytype) type {
+fn Unit(comptime base_units_in: anytype, comptime prime_powers_in: anytype, comptime float_powers_in: anytype) type {
     return struct {
-        value: ScalarType,
-
         const base_units = base_units_in;
         const prime_powers = prime_powers_in;
         const float_powers = float_powers_in;
         const Outer = @This();
-        const Scalar = ScalarType;
 
         fn WithScalarType(NewScalar: type) type {
             return Unit(NewScalar, base_units, prime_powers, float_powers);
@@ -38,7 +35,7 @@ fn Unit(comptime ScalarType: type, comptime base_units_in: anytype, comptime pri
         }
 
         pub fn Pow(power: Fraction) type {
-            return Unit(Scalar, base_units.pow(power), prime_powers.pow(power), float_powers.pow(power));
+            return Unit(base_units.pow(power), prime_powers.pow(power), float_powers.pow(power));
         }
 
         pub fn ToThe(power: comptime_int) type {
@@ -49,99 +46,112 @@ fn Unit(comptime ScalarType: type, comptime base_units_in: anytype, comptime pri
             return Pow(Fraction.fromInt(power).reciprocal());
         }
 
-        pub fn init(val: Scalar) Outer {
-            return Outer{ .value = val };
-        }
+        fn Quantity(Scalar: type) type {
+            return struct {
+                value: Scalar,
 
-        fn sameUnits(Other: type) bool {
-            return Other == WithScalarType(Other.Scalar);
-        }
+                const Self = @This();
+                const UnitType = Outer;
 
-        fn assertSameUnits(other: anytype, comptime function_name: []const u8) void {
-            if (!comptime sameUnits(@TypeOf(other))) {
-                @compileError("It is not permitted to call " ++ function_name ++ " except on Unit types with the same units");
-            }
-        }
+                pub fn init(val: Scalar) Outer {
+                    return Outer{ .value = val };
+                }
 
-        pub fn eq(this: Outer, other: anytype) bool {
-            assertSameUnits(other, "eq");
-            return this.value == other.value;
-        }
+                fn sameUnits(Other: type) bool {
+                    return UnitType == Other.UnitType;
+                }
 
-        pub fn neq(this: Outer, other: anytype) bool {
-            assertSameUnits(other, "neq");
-            return !this.eq(other);
-        }
+                fn assertSameUnits(other: anytype, comptime function_name: []const u8) void {
+                    if (!comptime sameUnits(@TypeOf(other))) {
+                        @compileError("It is not permitted to call " ++ function_name ++ " except on Unit types with the same units");
+                    }
+                }
 
-        pub fn lt(this: Outer, other: anytype) bool {
-            assertSameUnits(other, "lt");
-            return this.value < other.value;
-        }
+                pub fn eql(self: Self, other: anytype) bool {
+                    assertSameUnits(other, "eql");
+                    return self.value == other.value;
+                }
 
-        pub fn gt(this: Outer, other: anytype) bool {
-            assertSameUnits(other, "gt");
-            return other.lt(this);
-        }
+                pub fn neql(self: Self, other: anytype) bool {
+                    assertSameUnits(other, "neql");
+                    return !self.eql(other);
+                }
 
-        pub fn le(this: Outer, other: anytype) bool {
-            assertSameUnits(other, "le");
-            return !this.gt(other);
-        }
+                pub fn lt(self: Self, other: anytype) bool {
+                    assertSameUnits(other, "lt");
+                    return self.value < other.value;
+                }
 
-        pub fn ge(this: Outer, other: anytype) bool {
-            assertSameUnits(other, "ge");
-            return !this.lt(other);
-        }
+                pub fn gt(self: Self, other: anytype) bool {
+                    assertSameUnits(other, "gt");
+                    return other.lt(self);
+                }
 
-        pub fn neg(this: Outer) Outer {
-            return Outer{
-                .value = -this.value,
+                pub fn le(self: Self, other: anytype) bool {
+                    assertSameUnits(other, "le");
+                    return !self.gt(other);
+                }
+
+                pub fn ge(self: Self, other: anytype) bool {
+                    assertSameUnits(other, "ge");
+                    return !self.lt(other);
+                }
+
+                pub fn neg(self: Self) Self {
+                    return Self{
+                        .value = -self.value,
+                    };
+                }
+
+                pub fn add(self: Self, other: anytype) Quantity(@TypeOf(self.value, other.value)) {
+                    assertSameUnits(other, "add");
+                    return .{
+                        .value = self.value + other.value,
+                    };
+                }
+
+                pub fn sub(self: Self, other: anytype) Quantity(@TypeOf(self.value, other.value)) {
+                    assertSameUnits(other, "sub");
+                    return .{
+                        .value = self.value - other.value,
+                    };
+                }
+
+                fn MulType(self: Self, other: anytype) type {
+                    return Times(@TypeOf(other).Unit).Quantity(@Type(self.value, other.value));
+                }
+
+                pub fn mul(self: Self, other: anytype) MulType(self, other) {
+                    return .{ .value = self.value * other.value };
+                }
+
+                pub fn reciprocal(self: Self) Reciprocal.Quantity(Scalar) {
+                    return Reciprocal{ .value = 1.0 / self.value };
+                }
+
+                pub fn div(self: Self, other: anytype) self.MulType(other.reciprocal()) {
+                    return .{ .value = self.value / other.value };
+                }
+
+                pub fn pow(self: Self, power: Fraction) Pow(power).Quanity(Scalar) {
+                    return .{ .value = std.math.pow(@TypeOf(self.value), self.value, power.toFloat()) };
+                }
+
+                pub fn powi(self: Self, power: comptime_int) ToThe(power).Quanity(Scalar) {
+                    return self.pow(Fraction.fromInt(power));
+                }
+
+                pub fn root(self: Self, power: comptime_int) Root(power).Quanity(Scalar) {
+                    return self.pow(Fraction.fromInt(power).reciprocal());
+                }
+
+                pub fn convert(self: Self, OtherType: type) OtherType {
+                    const QuotientType = Self.Per(OtherType);
+                    const multiple = comptime QuotientType.prime_powers.toFloat() * QuotientType.float_powers.toFloat();
+                    const converted_value = self.value * multiple;
+                    return .{ .value = @floatCast(converted_value) };
+                }
             };
-        }
-
-        pub fn add(this: Outer, other: anytype) WithScalarType(@TypeOf(this.value, other.value)) {
-            assertSameUnits(other, "add");
-            return .{
-                .value = this.value + other.value,
-            };
-        }
-
-        pub fn sub(this: Outer, other: anytype) WithScalarType(@TypeOf(this.value, other.value)) {
-            assertSameUnits(other, "sub");
-            return .{
-                .value = this.value - other.value,
-            };
-        }
-
-        pub fn mul(this: Outer, other: anytype) Times(@TypeOf(other)) {
-            return .{ .value = this.value * other.value };
-        }
-
-        pub fn reciprocal(self: Outer) Reciprocal {
-            return Reciprocal{ .value = 1.0 / self.value };
-        }
-
-        pub fn div(this: Outer, other: anytype) Per(@TypeOf(other)) {
-            return .{ .value = this.value / other.value };
-        }
-
-        pub fn pow(self: Outer, power: Fraction) Pow(power) {
-            return .{ .value = std.math.pow(@TypeOf(self.value), self.value, power.toFloat()) };
-        }
-
-        pub fn powi(self: Outer, power: comptime_int) ToThe(power) {
-            return self.pow(Fraction.fromInt(power));
-        }
-
-        pub fn root(self: Outer, power: comptime_int) Root(power) {
-            return self.pow(Fraction.fromInt(power).reciprocal());
-        }
-
-        pub fn convert(self: Outer, OtherType: type) OtherType {
-            const QuotientType = Outer.Per(OtherType);
-            const multiple = comptime QuotientType.prime_powers.toFloat() * QuotientType.float_powers.toFloat();
-            const converted_value = self.value * multiple;
-            return .{ .value = @floatCast(converted_value) };
         }
     };
 }
@@ -153,7 +163,7 @@ const FloatFactor = factorization.Factorization(1, comptime_float, float_compare
 const radian = BaseUnit.fromBase("radian");
 const one_over_180 = factorization.primeFactorization(180).reciprocal();
 const pi = FloatFactor.fromBase(std.math.pi);
-const Degree32 = Unit(f32, radian, one_over_180, pi);
+const Degree32 = Unit(radian, one_over_180, pi).Quantity(f32);
 const Degree16 = Unit(f16, radian, one_over_180, pi);
 
 const metre = BaseUnit.fromBase("metre");
@@ -161,32 +171,28 @@ const one = factorization.primeFactorization(1);
 const f_one = FloatFactor.one;
 const Metre32 = Unit(f32, metre, one, f_one);
 
-test "WithScalarType" {
-    try testing.expect(Degree32.WithScalarType(f16) == Degree16);
-}
-
 test "sameUnits" {
     try testing.expect(Degree32.sameUnits(Degree16));
     try testing.expect(Degree32.sameUnits(Degree32));
     try testing.expect(!Degree32.sameUnits(Metre32));
 }
 
-test "eq" {
+test "eql" {
     const oneDegree = Degree32.init(1.0);
-    try testing.expect(oneDegree.eq(oneDegree));
-    try testing.expect(oneDegree.eq(Degree16.init(1.0)));
-    try testing.expect(!oneDegree.eq(Degree32.init(2.0)));
-    try testing.expect(!oneDegree.eq(Degree16.init(0.0)));
+    try testing.expect(oneDegree.eql(oneDegree));
+    try testing.expect(oneDegree.eql(Degree16.init(1.0)));
+    try testing.expect(!oneDegree.eql(Degree32.init(2.0)));
+    try testing.expect(!oneDegree.eql(Degree16.init(0.0)));
     // Uncommenting will caused compile error.
-    // try testing.expect(!oneDegree.eq(Metre32.init(1.0)));
+    // try testing.expect(!oneDegree.eql(Metre32.init(1.0)));
 }
 
-test "neq" {
+test "neql" {
     const oneDegree = Degree32.init(1.0);
 
-    try testing.expect(!oneDegree.neq(oneDegree));
-    try testing.expect(oneDegree.neq(Degree16.init(2.0)));
-    try testing.expect(oneDegree.neq(Degree32.init(2.0)));
+    try testing.expect(!oneDegree.neql(oneDegree));
+    try testing.expect(oneDegree.neql(Degree16.init(2.0)));
+    try testing.expect(oneDegree.neql(Degree32.init(2.0)));
 }
 
 test "lt" {
@@ -230,8 +236,8 @@ test "neg" {
     const oneDegree = Degree32.init(1.0);
     const minusOneDegree = Degree16.init(-1.0);
 
-    try testing.expect(oneDegree.neg().eq(minusOneDegree));
-    try testing.expect(minusOneDegree.neg().eq(oneDegree));
+    try testing.expect(oneDegree.neg().eql(minusOneDegree));
+    try testing.expect(minusOneDegree.neg().eql(oneDegree));
 }
 
 test "add" {
@@ -241,7 +247,7 @@ test "add" {
 
     const sum = oneDegree.add(twoDegrees);
 
-    try testing.expect(sum.eq(threeDegrees));
+    try testing.expect(sum.eql(threeDegrees));
 }
 
 test "sub" {
@@ -251,7 +257,7 @@ test "sub" {
 
     const difference = oneDegree.sub(twoDegrees);
 
-    try testing.expect(difference.eq(minusOneDegree));
+    try testing.expect(difference.eql(minusOneDegree));
 }
 
 const metre_radian = metre.mul(radian);
@@ -267,7 +273,7 @@ test "mul" {
     const three_degrees = Degree32.init(3.0);
     const six_degree_metres = MetreDegree32.init(6.0);
 
-    try testing.expect(two_metres.mul(three_degrees).eq(six_degree_metres));
+    try testing.expect(two_metres.mul(three_degrees).eql(six_degree_metres));
 }
 
 const PerDegree32 = Unit(f32, radian.reciprocal(), factorization.primeFactorization(180), pi.reciprocal());
@@ -279,7 +285,7 @@ test "Reciprocal" {
 test "reciprocal" {
     const two_degrees = Degree32.init(2.0);
     const half_per_degree = PerDegree32.init(0.5);
-    try testing.expect(two_degrees.reciprocal().eq(half_per_degree));
+    try testing.expect(two_degrees.reciprocal().eql(half_per_degree));
 }
 
 const MetrePerDegree32 = Unit(f32, metre.div(radian), one_over_180.reciprocal(), pi.reciprocal());
@@ -293,7 +299,7 @@ test "div" {
     const one_metre = Metre32.init(1.0);
     const two_degrees = Degree32.init(2.0);
     const half_metre_per_degree = MetrePerDegree32.init(0.5);
-    try testing.expect(one_metre.div(two_degrees).eq(half_metre_per_degree));
+    try testing.expect(one_metre.div(two_degrees).eql(half_metre_per_degree));
 }
 
 const two = Fraction.fromInt(2);
@@ -314,8 +320,8 @@ test "Pow" {
 }
 
 test "pow" {
-    try testing.expect(MetrePerDegree32.init(2.0).pow(two).eq(MetrePerDegreeAllSquared32.init(4.0)));
-    try testing.expect(MetrePerDegree32.init(4.0).pow(three_halves).eq(RootMetrePerDegreeAllCubed32.init(8.0)));
+    try testing.expect(MetrePerDegree32.init(2.0).pow(two).eql(MetrePerDegreeAllSquared32.init(4.0)));
+    try testing.expect(MetrePerDegree32.init(4.0).pow(three_halves).eql(RootMetrePerDegreeAllCubed32.init(8.0)));
 }
 
 test "ToThe" {
@@ -324,7 +330,7 @@ test "ToThe" {
 }
 
 test "powi" {
-    try testing.expect(MetrePerDegree32.init(2.0).powi(2).eq(MetrePerDegreeAllSquared32.init(4.0)));
+    try testing.expect(MetrePerDegree32.init(2.0).powi(2).eql(MetrePerDegreeAllSquared32.init(4.0)));
 }
 
 test "Root" {
@@ -333,7 +339,7 @@ test "Root" {
 }
 
 test "root" {
-    try testing.expect(MetrePerDegreeAllSquared32.init(4.0).root(2).eq(MetrePerDegree32.init(2.0)));
+    try testing.expect(MetrePerDegreeAllSquared32.init(4.0).root(2).eql(MetrePerDegree32.init(2.0)));
 }
 
 test "convert" {
@@ -344,7 +350,7 @@ test "convert" {
 
 pub fn Units(FloatType: type) type {
     return struct {
-        pub fn BaseThing(name: []const u8) type {
+        pub fn BaseQuantity(name: []const u8) type {
             return Unit(FloatType, BaseUnit.fromBase(name), one, FloatFactor.one);
         }
 
@@ -363,7 +369,7 @@ pub fn Units(FloatType: type) type {
 }
 
 test "BaseUnits" {
-    try testing.expect(Units(f32).BaseThing("metre") == Metre32);
+    try testing.expect(Units(f32).BaseQuantity("metre") == Metre32);
 }
 
 test "FractionalPrefix" {
