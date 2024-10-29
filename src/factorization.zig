@@ -156,8 +156,7 @@ pub fn Factorization(size: comptime_int, Type: type, before: fn (lhs: Type, rhs:
         pub fn toFloat(self:Self) f64{
             comptime var product = 1.0;
             for(self.factors)|factor|{
-                const base = if(@TypeOf(factor.base) == comptime_int) @as(f64, factor.base)  else factor.base;
-                product = product * std.math.pow(f64, base, factor.power.toFloat());
+                product = product * std.math.pow(f64, @as(f64, factor.base), factor.power.toFloat());
             } 
             return product;
         }
