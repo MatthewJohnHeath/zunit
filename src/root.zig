@@ -3,7 +3,6 @@ const testing = std.testing;
 const quantity = @import("quantity.zig");
 
 pub const Metre = quantity.BaseUnit("metre");
-
 pub const metres = Metre.times;
 
 test "metres" {
@@ -14,29 +13,60 @@ test "metres" {
 }
 
 pub const Second = quantity.BaseUnit("second");
+pub const seconds = Second.times;
 
 pub const Kilogram = quantity.BaseUnit("kilogram");
+pub const kilograms = Kilogram.times;
 
 pub const Ampere = quantity.BaseUnit("ampere");
+pub const amperes = Ampere.times;
 
 pub const Kelvin = quantity.BaseUnit("kelvin");
+pub const kelvins = Kelvin.times;
 
 pub const Mole = quantity.BaseUnit("mole");
+pub const moles = Mole.times;
 
 pub const Candela = quantity.BaseUnit("candela");
+pub const candelas = Candela.times;
 
 pub const Radian = quantity.BaseUnit("radian");
+pub const radians = Radian.times;
 
 pub const Rot = Radian.Times(quantity.FloatPrefix(2.0 * std.math.pi));
+pub const rot = Rot.times;
 
 pub const Degree = Rot.Times(quantity.IntPrefix(360).reciprocal());
+pub const degree = Degree.times;
+
+pub const Bi = quantity.IntPrefix(2);
+pub const Octo = Bi.ToThe(3);
+pub const Kibi = Bi.ToThe(10);
+pub const Mebi = Kibi.ToThe(2);
+pub const Gibi = Kibi.ToThe(3);
+pub const Tebi = Kibi.ToThe(4);
+pub const Semi = Bi.Reciprocal;
+
+pub const Deca = quantity.IntPrefix(10);
+pub const Deci = Deca.Reciprocal;
+pub const Hecto = Deca.ToThe(2);
+pub const Centi = Hecto.Reciprocal;
+pub const Kilo = Deca.ToThe(3);
+pub const Milli = Kilo.Reciprocal;
+pub const Mega = Deca.ToThe(6);
+pub const Micro = Mega.Reciprocal;
+pub const Giga = Deca.ToThe(9);
+pub const Nano = Giga.Reciprocal;
+pub const Tera = Deca.ToThe(12);
+pub const Pico = Tera.Reciprocal;
+pub const Peta = Deca.ToThe(15);
+pub const Femto = Peta.Reciprocal;
 
 pub const Pixel = quantity.BaseUnit("pixel");
-
+pub const pixels = Pixel.times;
 pub const Bit = quantity.BaseUnit("bit");
-
-const Bi = quantity.IntPrefix(2);
-
-const Octo = Bi.ToThe(3);
-
+pub const bits = Bit.times;
 pub const Byte = Octo.Times(Bit);
+pub const bytes = Byte.times;
+
+pub const Litre = Centi.Times(Metre.ToThe(2));
