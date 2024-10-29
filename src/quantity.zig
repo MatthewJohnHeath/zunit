@@ -16,12 +16,41 @@ fn Quantity(comptime ScalarType: type, comptime base_units_in: anytype, comptime
         const Self = @This();
         const Scalar = ScalarType;
 
-        pub fn init(val: Scalar) Self {
-            return Self{ .value = val };
-        }
-
         fn WithScalarType(NewScalar: type) type {
             return Quantity(NewScalar, base_units, prime_powers, float_powers);
+        }
+
+        pub fn Times(Other: type) type {
+            const other: Other = undefined;
+            const self: Self = undefined;
+            return Quantity(
+                @TypeOf(self.value, other.value),
+                base_units.mul(Other.base_units),
+                prime_powers.mul(Other.prime_powers),
+                float_powers.mul(Other.float_powers),
+            );
+        }
+
+        pub const Reciprocal = ToThe(-1);
+
+        pub fn Per(Other: type) type {
+            return Times(Other.Reciprocal);
+        }
+
+        pub fn Pow(power: Fraction) type {
+            return Quantity(Scalar, base_units.pow(power), prime_powers.pow(power), float_powers.pow(power));
+        }
+
+        pub fn ToThe(power: comptime_int) type {
+            return Pow(Fraction.fromInt(power));
+        }
+
+        pub fn Root(power: comptime_int) type {
+            return Pow(Fraction.fromInt(power).reciprocal());
+        }
+
+        pub fn init(val: Scalar) Self {
+            return Self{ .value = val };
         }
 
         fn sameUnits(Other: type) bool {
@@ -84,53 +113,24 @@ fn Quantity(comptime ScalarType: type, comptime base_units_in: anytype, comptime
             };
         }
 
-        pub fn Times(Other: type) type {
-            const other: Other = undefined;
-            const self: Self = undefined;
-            return Quantity(
-                @TypeOf(self.value, other.value),
-                base_units.mul(Other.base_units),
-                prime_powers.mul(Other.prime_powers),
-                float_powers.mul(Other.float_powers),
-            );
-        }
-
         pub fn mul(this: Self, other: anytype) Times(@TypeOf(other)) {
             return .{ .value = this.value * other.value };
         }
 
-        pub const Reciprocal = ToThe(-1);
-
         pub fn reciprocal(self: Self) Reciprocal {
             return Reciprocal{ .value = 1.0 / self.value };
-        }
-
-        pub fn Per(Other: type) type {
-            return Times(Other.Reciprocal);
         }
 
         pub fn div(this: Self, other: anytype) Per(@TypeOf(other)) {
             return .{ .value = this.value / other.value };
         }
 
-        pub fn Pow(power: Fraction) type {
-            return Quantity(Scalar, base_units.pow(power), prime_powers.pow(power), float_powers.pow(power));
-        }
-
         pub fn pow(self: Self, power: Fraction) Pow(power) {
             return .{ .value = std.math.pow(@TypeOf(self.value), self.value, power.toFloat()) };
         }
 
-        pub fn ToThe(power: comptime_int) type {
-            return Pow(Fraction.fromInt(power));
-        }
-
         pub fn powi(self: Self, power: comptime_int) ToThe(power) {
             return self.pow(Fraction.fromInt(power));
-        }
-
-        pub fn Root(power: comptime_int) type {
-            return Pow(Fraction.fromInt(power).reciprocal());
         }
 
         pub fn root(self: Self, power: comptime_int) Root(power) {
