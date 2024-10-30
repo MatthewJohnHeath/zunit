@@ -4,38 +4,36 @@ const fraction = @import("comptime_fraction.zig");
 
 const Fraction = fraction.ComptimeFraction;
 
-pub fn OffsetUnit(AbsoluteUnit: type, offset_by : Fraction)type{
-    if (offset.isZero()) {
+pub fn OffsetUnit(AbsoluteUnit: type, offset_by: Fraction) type {
+    if (offset_by.isZero()) {
         return AbsoluteUnit;
     }
-    return struct{
-
+    return struct {
         const offset_fraction = offset_by;
         pub const offset = AbsoluteUnit.init(offset_by.offset_by.toFloat());
-        pub fn times(val: anytype) Of(@TypeOf(float)){
-            return .{.value = val};
+        pub fn times(val: anytype) Of(@TypeOf(val)) {
+            return .{ .value = val };
         }
         const Outer = @This();
 
-        pub fn OffsetBy(amount:Fraction) type{
+        pub fn OffsetBy(amount: Fraction) type {
             return OffsetUnit(AbsoluteUnit, offset_fraction.add(amount));
         }
 
-        pub fn Of(Scalar: type) type{
-            
-            return struct{
-                value : Scalar,
+        pub fn Of(Scalar: type) type {
+            return struct {
+                value: Scalar,
 
                 const Self = @This();
                 const UnitType = Outer;
                 pub const Absolute = AbsoluteUnit.Of(Scalar);
 
-                fn init(val: Scalar) Self{
-                    return .{value = val};
+                fn init(val: Scalar) Self {
+                    return .{ .value = val };
                 }
 
                 fn assertSameUnits(other: anytype, comptime function_name: []const u8) void {
-                    if ( UnitType != @TypeOf(other).UnitType) {
+                    if (UnitType != @TypeOf(other).UnitType) {
                         @compileError("It is not permitted to call " ++ function_name ++ " except on OffsetUnit types with the same units");
                     }
                 }
@@ -70,8 +68,8 @@ pub fn OffsetUnit(AbsoluteUnit: type, offset_by : Fraction)type{
                     return !self.lt(other);
                 }
 
-                fn TranslatedType(TranslationType : type) type{
-                    if(AbsoluteUnit != TranslationType.UnitType){
+                fn TranslatedType(TranslationType: type) type {
+                    if (AbsoluteUnit != TranslationType.UnitType) {
                         @compileError("add and sub for OffsetUnit quantities can only be called on quantities of the underlying type.");
                     }
                     const self: Self = undefined;
@@ -79,40 +77,38 @@ pub fn OffsetUnit(AbsoluteUnit: type, offset_by : Fraction)type{
                     return Of(@TypeOf(self.value, other.value));
                 }
 
-                pub fn add(self : Self, quantity : anytype) TranslatedType(@TypeOf(quantity)){
-                    return .{.value = self.value + quantity.value};
+                pub fn add(self: Self, quantity: anytype) TranslatedType(@TypeOf(quantity)) {
+                    return .{ .value = self.value + quantity.value };
                 }
 
-                pub fn sub(self : Self, quantity : anytype) TranslatedType(@TypeOf(quantity)){
-                    return .{.value = self.value - quantity.value};
+                pub fn sub(self: Self, quantity: anytype) TranslatedType(@TypeOf(quantity)) {
+                    return .{ .value = self.value - quantity.value };
                 }
 
-                fn DifferenceType(OtherType : type) type{
-                    if ( UnitType != OtherType.UnitType) {
+                fn DifferenceType(OtherType: type) type {
+                    if (UnitType != OtherType.UnitType) {
                         @compileError("diff can only be called on OffsetUnit types with the same units");
                     }
                     const self: Self = undefined;
-                    const other: TranslationType = undefined;
+                    const other: OtherType = undefined;
                     return AbsoluteUnit.Of(@TypeOf(self.value, other.value));
                 }
-                pub fn diff(self: Self, other: anytype) DifferenceType(@TypeOf(other)){
-                    return .{.value = self.value - other.value};
+                pub fn diff(self: Self, other: anytype) DifferenceType(@TypeOf(other)) {
+                    return .{ .value = self.value - other.value };
                 }
 
-                pub fn toAbsolute(self:Self) Absolute{
+                pub fn toAbsolute(self: Self) Absolute {
                     return Absolute.init(self.value).add(offset);
                 }
 
-                pub fn fromAbsolute(self:Absolute) Self{
+                pub fn fromAbsolute(self: Absolute) Self {
                     return init(self.value).sub(offset);
                 }
 
-                pub fn convert(self :Self, OtherType: type) OtherType{
+                pub fn convert(self: Self, OtherType: type) OtherType {
                     return self.toAbsolute().convert(OtherType);
                 }
-
-
-            }
+            };
         }
     };
 }
