@@ -36,7 +36,7 @@ pub const radians = Radian.times;
 pub const Rot = Radian.Times(quantity.FloatPrefix(2.0 * std.math.pi));
 pub const rot = Rot.times;
 
-pub const Degree = Rot.Times(quantity.IntPrefix(360).reciprocal());
+pub const Degree = Rot.Times(quantity.IntPrefix(360).Reciprocal);
 pub const degree = Degree.times;
 
 pub const Bi = quantity.IntPrefix(2);
