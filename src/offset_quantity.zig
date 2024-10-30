@@ -17,6 +17,10 @@ pub fn OffsetUnit(AbsoluteUnit: type, offset_by : Fraction)type{
         }
         const Outer = @This();
 
+        pub fn OffsetBy(amount:Fraction) type{
+            return OffsetUnit(AbsoluteUnit, offset_fraction.add(amount));
+        }
+
         pub fn Of(Scalar: type) type{
             
             return struct{
