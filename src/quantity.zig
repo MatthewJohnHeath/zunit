@@ -3,10 +3,9 @@ const testing = std.testing;
 const factorization = @import("factorization.zig");
 const compare = @import("compare.zig");
 const fraction = @import("comptime_fraction.zig");
-const offset = @import("offset_quantity.zig");
 
 const Fraction = fraction.ComptimeFraction;
-const OffsetUnit = offset.OffsetUnit;
+const OffsetUnit = @import("offset_quantity.zig").OffsetUnit;
 const BaseUnitFactor = factorization.Factorization(1, []const u8, compare.string_before, compare.string_eql);
 const float_compare = compare.NumberCompare(comptime_float);
 const FloatFactor = factorization.Factorization(1, comptime_float, float_compare.before, float_compare.eql);
@@ -63,7 +62,7 @@ fn Unit(comptime base_units_in: anytype, comptime prime_powers_in: anytype, comp
         }
 
         pub fn OffsetBy(offset: Fraction) type {
-            return OffsetUnit(Self, offset);
+            return OffsetUnit(Outer, offset);
         }
 
         pub fn times(value: anytype) Of(@TypeOf(value)) {
