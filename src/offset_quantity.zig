@@ -1,22 +1,34 @@
 const std = @import("std");
 const testing = std.testing;
-//const quantity = @import("quantity.zig");
 const fraction = @import("comptime_fraction.zig");
 
 const Fraction = fraction.ComptimeFraction;
 
-pub fn OffsetUnit(AbsoluteUnit: type, offset : Fraction)type{
-    if offset.isZero() {
+pub fn OffsetUnit(AbsoluteUnit: type, offset_by : Fraction)type{
+    if (offset.isZero()) {
         return AbsoluteUnit;
     }
     return struct{
+
+        const offset_fraction = offset_by;
+        pub const offset = AbsoluteUnit.init(offset_by.offset_by.toFloat());
+        pub fn times(val: anytype) Of(@TypeOf(float)){
+            return .{.value = val};
+        }
+        const Outer = @This();
+
         pub fn Of(Scalar: type) type{
-            const Outer = @This();
+            
             return struct{
                 value : Scalar,
 
                 const Self = @This();
                 const UnitType = Outer;
+                pub const Absolute = AbsoluteUnit.Of(Scalar);
+
+                fn init(val: Scalar) Self{
+                    return .{value = val};
+                }
 
                 fn assertSameUnits(other: anytype, comptime function_name: []const u8) void {
                     if ( UnitType != @TypeOf(other).UnitType) {
@@ -82,6 +94,20 @@ pub fn OffsetUnit(AbsoluteUnit: type, offset : Fraction)type{
                 pub fn diff(self: Self, other: anytype) DifferenceType(@TypeOf(other)){
                     return .{.value = self.value - other.value};
                 }
+
+                pub fn toAbsolute(self:Self) Absolute{
+                    return Absolute.init(self.value).add(offset);
+                }
+
+                pub fn fromAbsolute(self:Absolute) Self{
+                    return init(self.value).sub(offset);
+                }
+
+                pub fn convert(self :Self, OtherType: type) OtherType{
+                    return self.toAbsolute().convert(OtherType);
+                }
+
+
             }
         }
     };

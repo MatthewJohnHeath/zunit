@@ -166,9 +166,14 @@ fn Unit(comptime base_units_in: anytype, comptime prime_powers_in: anytype, comp
                     return self.pow(Fraction.fromInt(power).reciprocal());
                 }
 
+                fn fromAbsolute(self: Self) Self {
+                    return self;
+                }
+
                 pub fn convert(self: Self, OtherType: type) OtherType {
                     const QuotientType = Self.Per(OtherType);
                     const multiple = comptime QuotientType.prime_powers.toFloat() * QuotientType.float_powers.toFloat();
+                    const has_offset = @hasDecl(OtherType, "offset");
                     const converted_value = self.value * multiple;
                     return .{ .value = @floatCast(converted_value) };
                 }
