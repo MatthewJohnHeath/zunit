@@ -62,7 +62,7 @@ fn Unit(comptime base_units_in: anytype, comptime prime_powers_in: anytype, comp
         }
 
         pub fn OffsetBy(offset: Fraction) type {
-            return OffsetUnit(Outer, offset);
+            return OffsetUnit(@This(), offset);
         }
 
         pub fn times(value: anytype) Of(@TypeOf(value)) {
