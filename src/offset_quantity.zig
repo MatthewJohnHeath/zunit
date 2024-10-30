@@ -112,3 +112,35 @@ pub fn OffsetUnit(AbsoluteUnit: type, offset_by: Fraction) type {
         }
     };
 }
+
+const small_namespace = struct {
+    fn Of(Scalar: type) type {
+        return struct {
+            value: Scalar,
+            const Self = @This();
+
+            fn init(val: Scalar) Self {
+                .{ .value = val };
+            }
+            fn convert(self: Self, OtherType: type) OtherType {
+                OtherType.init(self.value);
+            }
+        };
+    }
+};
+
+const OffsetUnit32 = OffsetUnit(small_namespace, Fraction.init(1, 2)).Of(f32);
+const OffsetUnit64 = OffsetUnit(small_namespace, Fraction.init(1, 2)).Of(f64);
+
+const smaller_namespace = struct {
+    fn Of(Scalar: type) type {
+        return struct {
+            x: Scalar,
+            const Self = @This();
+
+            fn init(val: Scalar) Self {
+                .{ .x = val };
+            }
+        };
+    }
+};
