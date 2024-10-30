@@ -19,6 +19,10 @@ pub const ComptimeFraction = struct {
             .denominator = denominator,
         };
     }
+    
+    pub fn isZero(self:self) bool{
+        return self.numerator == 0;
+    }
 
     pub fn fromInt(n: comptime_int) Self {
         return init(n, 1);

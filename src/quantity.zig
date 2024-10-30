@@ -69,7 +69,7 @@ fn Unit(comptime base_units_in: anytype, comptime prime_powers_in: anytype, comp
                 value: Scalar,
 
                 const Self = @This();
-                const UnitType = Outer;
+                pub const UnitType = Outer;
 
                 pub fn init(val: Scalar) Self {
                     return .{ .value = val };
@@ -134,6 +134,7 @@ fn Unit(comptime base_units_in: anytype, comptime prime_powers_in: anytype, comp
                         .value = self.value - other.value,
                     };
                 }
+                pub const diff = sub;
 
                 fn MulType(Other: type) type {
                     const self: Self = undefined;
