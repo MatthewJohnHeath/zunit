@@ -71,7 +71,7 @@ pub const Byte = Octo.Times(Bit);
 pub const bytes = Byte.times;
 
 pub const Tonne = Kilo.Times(Kilogram);
-pub const Gram = Mili.Times(Kilogram):
+pub const Gram = Milli.Times(Kilogram);
 pub const Litre = Deci.Times(Metre).ToThe(3);
 
 pub const DegreeCelsius = Kelvin.OffsetBy(Fraction.init(27315, 100));
