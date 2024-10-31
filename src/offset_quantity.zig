@@ -132,6 +132,9 @@ const small_namespace = struct {
             fn convert(self: Self, OtherType: type) OtherType {
                 return OtherType.init(self.value);
             }
+            fn add(self:Self, other : anytype) Self{
+                return .{.value = self.value + other.value};
+            }
         };
     }
 };
@@ -204,6 +207,11 @@ test "diff" {
 test "fromAbsolute" {
     const offsetHalf = OffsetUnit64.fromAbsolute(AbsoluteUnit64.init(1.0));
     try testing.expect(offsetHalf.value == 0.5);
+}
+
+test "toAbsolute" {
+    const absolute1 = OffsetUnit64.init(0.5).toAbsolute();
+    try testing.expect(absolute1.value == 1.0);
 }
 
 const smaller_namespace = struct {
