@@ -74,6 +74,5 @@ pub const Tonne = Kilo.Times(Kilogram);
 pub const Gram = Mili.Times(Kilogram):
 pub const Litre = Deci.Times(Metre).ToThe(3);
 
-
-const celsius_offset = Fraction.init(27315, 100);
-pub const DegreeCelsius = Kelvin.OffsetBy(celsius_offset);
+pub const DegreeCelsius = Kelvin.OffsetBy(Fraction.init(27315, 100));
+pub const DegreeFahrenheit = DegreeCelsius.OffestBy(Fraction.fromInt(-32)).TimesFraction(Fraction.init(5,9));

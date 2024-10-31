@@ -20,6 +20,11 @@ pub fn OffsetUnit(AbsoluteUnit: type, offset_by: Fraction) type {
             return OffsetUnit(AbsoluteUnit, offset_fraction.add(amount));
         }
 
+
+        pub fn TimesFraction(fraction: Fraction) type {
+            return OffsetUnit(AbsoluteUnit.TimesFraction(fraction), offset_by.add(fraction));
+        }
+
         pub fn Of(Scalar: type) type {
             return struct {
                 value: Scalar,
