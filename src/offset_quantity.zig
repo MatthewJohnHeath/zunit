@@ -120,6 +120,11 @@ pub fn OffsetUnit(AbsoluteUnit: type, offset_by: Fraction) type {
 
 const small_namespace = struct {
     const Outer = @This();
+
+    pub fn TimesFraction(_: Fraction) type {
+        return Outer;
+    }
+
     fn Of(Scalar: type) type {
         return struct {
             value: Scalar,
@@ -139,13 +144,28 @@ const small_namespace = struct {
     }
 };
 
+const HalfOffset = OffsetUnit(small_namespace, Fraction.init(1, 2));
+
 test "OffsetUnit"{
-    try testing.expect(OffsetUnit(small_namespace, Fraction.init(1, 2)).offset == 0.5);
+    try testing.expect(HalfOffset.offset.value == 0.5);
     try testing.expect(OffsetUnit(small_namespace, Fraction.fromInt(0)) == small_namespace);
 }
 
-const OffsetUnit32 = OffsetUnit(small_namespace, Fraction.init(1, 2)).Of(f32);
-const OffsetUnit64 = OffsetUnit(small_namespace, Fraction.init(1, 2)).Of(f64);
+test "OffsetBy"{
+    try testing.expect(HalfOffset.OffsetBy(Fraction.init(1,2)).offset_fraction.eql(Fraction.fromInt(1)));
+    try testing.expect(HalfOffset.OffsetBy(Fraction.init(-1, 2)) == small_namespace);
+}
+
+test "TimesFraction"{
+    try testing.expect(HalfOffset.TimesFraction(Fraction.fromInt(2)).offset_fraction.eql(Fraction.init(1,4)));
+}
+
+test "times" {
+    try testing.expect(HalfOffset.times(2.0).value == 2.0);
+}
+
+const OffsetUnit32 = HalfOffset.Of(f32);
+const OffsetUnit64 =HalfOffset.Of(f64);
 
 test "eql" {
     try testing.expect(OffsetUnit32.init(2.0).eql(OffsetUnit32.init(2.0)));
