@@ -143,6 +143,13 @@ test "eql" {
     try testing.expect(!OffsetUnit32.init(1.0).eql(OffsetUnit64.init(2.0)));
 }
 
+test "neql" {
+    try testing.expect(!OffsetUnit32.init(2.0).neql(OffsetUnit32.init(2.0)));
+    try testing.expect(!OffsetUnit32.init(2.0).neql(OffsetUnit64.init(2.0)));
+    try testing.expect(OffsetUnit32.init(2.0).neql(OffsetUnit32.init(1.0)));
+    try testing.expect(!OffsetUnit32.init(1.0).neql(OffsetUnit64.init(2.0)));
+}
+
 
 
 const smaller_namespace = struct {
