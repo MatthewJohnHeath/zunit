@@ -193,25 +193,25 @@ test "add" {
 }
 
 test "sub" {
-    const offset1 = OffsetUnit32.init(2.0).sub(AbsoluteUnit64.init(1.0));
-    try testing.expect(offset1.eql(OffsetUnit32.init(1.0)));
-    try testing.expect(@TypeOf(offset1) == OffsetUnit64);
+    const offset_1 = OffsetUnit32.init(2.0).sub(AbsoluteUnit64.init(1.0));
+    try testing.expect(offset_1.eql(OffsetUnit32.init(1.0)));
+    try testing.expect(@TypeOf(offset_1) == OffsetUnit64);
 }
 
 test "diff" {
-    const absolute1 = OffsetUnit32.init(2.0).diff(OffsetUnit64.init(1.0));
-    try testing.expect(absolute1.value == 1.0);
-    try testing.expect(@TypeOf(absolute1) == AbsoluteUnit64);
+    const absolute_1 = OffsetUnit32.init(2.0).diff(OffsetUnit64.init(1.0));
+    try testing.expect(absolute_1.value == 1.0);
+    try testing.expect(@TypeOf(absolute_1) == AbsoluteUnit64);
 }
 
 test "fromAbsolute" {
-    const offsetHalf = OffsetUnit64.fromAbsolute(AbsoluteUnit64.init(1.0));
-    try testing.expect(offsetHalf.value == 0.5);
+    const offset_half = OffsetUnit64.fromAbsolute(AbsoluteUnit64.init(1.0));
+    try testing.expect(offset_half.value == 0.5);
 }
 
 test "toAbsolute" {
-    const absolute1 = OffsetUnit64.init(0.5).toAbsolute();
-    try testing.expect(absolute1.value == 1.0);
+    const absolute_1 = OffsetUnit64.init(0.5).toAbsolute();
+    try testing.expect(absolute_1.value == 1.0);
 }
 
 const smaller_namespace = struct {
@@ -220,9 +220,16 @@ const smaller_namespace = struct {
             x: Scalar,
             const Self = @This();
 
-            fn init(val: Scalar) Self {
-                .{ .x = val };
+            fn init(val: anytype) Self {
+                const x:Scalar = @floatCast(val);
+                return .{ .x = x};
             }
         };
     }
 };
+
+test "convert" {
+    const offset_half = OffsetUnit64.init(0.5);
+    const x_one = offset_half.convert(smaller_namespace.Of(f16));
+    try testing.expect(x_one.x == 1.0);
+}
