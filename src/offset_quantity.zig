@@ -20,8 +20,8 @@ pub fn OffsetUnit(AbsoluteUnit: type, offset_by: Fraction) type {
             return OffsetUnit(AbsoluteUnit, offset_fraction.add(amount));
         }
 
-        pub fn TimesFraction(fraction: Fraction) type {
-            return OffsetUnit(AbsoluteUnit.TimesFraction(fraction), offset_by.div(fraction));
+        pub fn TimesFraction(multiplier: Fraction) type {
+            return OffsetUnit(AbsoluteUnit.TimesFraction(fraction), offset_by.div(multiplier));
         }
 
         pub fn Of(Scalar: type) type {
@@ -135,6 +135,15 @@ const small_namespace = struct {
 
 const OffsetUnit32 = OffsetUnit(small_namespace, Fraction.init(1, 2)).Of(f32);
 const OffsetUnit64 = OffsetUnit(small_namespace, Fraction.init(1, 2)).Of(f64);
+
+test "eql" {
+    try testing.expect(OffsetUnit32.init(2.0).eql(OffsetUnit32.init(2.0)));
+    try testing.expect(OffsetUnit32.init(2.0).eql(OffsetUnit64.init(2.0)));
+    try testing.expect(!OffsetUnit32.init(2.0).eql(OffsetUnit32.init(1.0)));
+    try testing.expect(!OffsetUnit32.init(1.0).eql(OffsetUnit64.init(2.0)));
+}
+
+
 
 const smaller_namespace = struct {
     fn Of(Scalar: type) type {

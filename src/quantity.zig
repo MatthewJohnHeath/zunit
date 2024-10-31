@@ -49,7 +49,6 @@ fn Unit(comptime base_units_in: anytype, comptime prime_powers_in: anytype, comp
             return Times(Other.Reciprocal);
         }
 
-
         pub fn TimesFraction(fraction: Fraction) type {
             return Times(FractionalPrefix(Fraction));
         }

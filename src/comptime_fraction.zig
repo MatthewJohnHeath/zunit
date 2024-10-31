@@ -20,7 +20,7 @@ pub const ComptimeFraction = struct {
         };
     }
     
-    pub fn isZero(self:self) bool{
+    pub fn isZero(self:Self) bool{
         return self.numerator == 0;
     }
 
