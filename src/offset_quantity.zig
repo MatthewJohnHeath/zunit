@@ -97,6 +97,7 @@ pub fn OffsetUnit(AbsoluteUnit: type, offset_by: Fraction) type {
                     const other: OtherType = undefined;
                     return AbsoluteUnit.Of(@TypeOf(self.value, other.value));
                 }
+
                 pub fn diff(self: Self, other: anytype) DifferenceType(@TypeOf(other)) {
                     return .{ .value = self.value - other.value };
                 }
@@ -147,9 +148,36 @@ test "neql" {
     try testing.expect(!OffsetUnit32.init(2.0).neql(OffsetUnit32.init(2.0)));
     try testing.expect(!OffsetUnit32.init(2.0).neql(OffsetUnit64.init(2.0)));
     try testing.expect(OffsetUnit32.init(2.0).neql(OffsetUnit32.init(1.0)));
-    try testing.expect(!OffsetUnit32.init(1.0).neql(OffsetUnit64.init(2.0)));
+    try testing.expect(OffsetUnit32.init(1.0).neql(OffsetUnit64.init(2.0)));
 }
 
+test "lt" {
+    try testing.expect(!OffsetUnit32.init(2.0).lt(OffsetUnit32.init(2.0)));
+    try testing.expect(!OffsetUnit32.init(2.0).lt(OffsetUnit64.init(2.0)));
+    try testing.expect(!OffsetUnit32.init(2.0).lt(OffsetUnit32.init(1.0)));
+    try testing.expect(OffsetUnit32.init(1.0).lt(OffsetUnit64.init(2.0)));
+}
+
+test "gt" {
+    try testing.expect(!OffsetUnit32.init(2.0).gt(OffsetUnit32.init(2.0)));
+    try testing.expect(!OffsetUnit32.init(2.0).gt(OffsetUnit64.init(2.0)));
+    try testing.expect(OffsetUnit32.init(2.0).gt(OffsetUnit32.init(1.0)));
+    try testing.expect(!OffsetUnit32.init(1.0).gt(OffsetUnit64.init(2.0)));
+}
+
+test "le" {
+    try testing.expect(OffsetUnit32.init(2.0).le(OffsetUnit32.init(2.0)));
+    try testing.expect(OffsetUnit32.init(2.0).le(OffsetUnit64.init(2.0)));
+    try testing.expect(!OffsetUnit32.init(2.0).le(OffsetUnit32.init(1.0)));
+    try testing.expect(OffsetUnit32.init(1.0).le(OffsetUnit64.init(2.0)));
+}
+
+test "ge" {
+    try testing.expect(OffsetUnit32.init(2.0).ge(OffsetUnit32.init(2.0)));
+    try testing.expect(OffsetUnit32.init(2.0).ge(OffsetUnit64.init(2.0)));
+    try testing.expect(OffsetUnit32.init(2.0).ge(OffsetUnit32.init(1.0)));
+    try testing.expect(!OffsetUnit32.init(1.0).ge(OffsetUnit64.init(2.0)));
+}
 
 
 const smaller_namespace = struct {
