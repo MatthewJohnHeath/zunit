@@ -119,16 +119,18 @@ pub fn OffsetUnit(AbsoluteUnit: type, offset_by: Fraction) type {
 }
 
 const small_namespace = struct {
+    const Outer = @This();
     fn Of(Scalar: type) type {
         return struct {
             value: Scalar,
             const Self = @This();
+            const UnitType = Outer;
 
             fn init(val: Scalar) Self {
-                .{ .value = val };
+               return  .{ .value = val };
             }
             fn convert(self: Self, OtherType: type) OtherType {
-                OtherType.init(self.value);
+                return OtherType.init(self.value);
             }
         };
     }
@@ -177,6 +179,14 @@ test "ge" {
     try testing.expect(OffsetUnit32.init(2.0).ge(OffsetUnit64.init(2.0)));
     try testing.expect(OffsetUnit32.init(2.0).ge(OffsetUnit32.init(1.0)));
     try testing.expect(!OffsetUnit32.init(1.0).ge(OffsetUnit64.init(2.0)));
+}
+
+const AbsoluteUnit64 = small_namespace.Of(f64);
+
+test "add" {
+    const offset3 = OffsetUnit32.init(2.0).add(AbsoluteUnit64.init(1.0));
+    try testing.expect(offset3.eql(OffsetUnit32.init(3.0)));
+    try testing.expect(@TypeOf(offset3) == OffsetUnit64);
 }
 
 
