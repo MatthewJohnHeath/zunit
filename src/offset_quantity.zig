@@ -139,6 +139,11 @@ const small_namespace = struct {
     }
 };
 
+test "OffsetUnit"{
+    try testing.expect(OffsetUnit(small_namespace, Fraction.init(1, 2)).offset == 0.5);
+    try testing.expect(OffsetUnit(small_namespace, Fraction.fromInt(0)) == small_namespace);
+}
+
 const OffsetUnit32 = OffsetUnit(small_namespace, Fraction.init(1, 2)).Of(f32);
 const OffsetUnit64 = OffsetUnit(small_namespace, Fraction.init(1, 2)).Of(f64);
 
