@@ -10,7 +10,7 @@ pub fn OffsetUnit(AbsoluteUnit: type, offset_by: Fraction) type {
     }
     return struct {
         const offset_fraction = offset_by;
-        pub const offset = AbsoluteUnit.init(offset_by.offset_by.toFloat());
+        pub const offset = AbsoluteUnit.Of(comptime_float).init(offset_by.toFloat());
         pub fn times(val: anytype) Of(@TypeOf(val)) {
             return .{ .value = val };
         }
@@ -106,8 +106,8 @@ pub fn OffsetUnit(AbsoluteUnit: type, offset_by: Fraction) type {
                     return Absolute.init(self.value).add(offset);
                 }
 
-                pub fn fromAbsolute(self: Absolute) Self {
-                    return init(self.value).sub(offset);
+                pub fn fromAbsolute(in: Absolute) Self {
+                    return init(in.value).sub(offset);
                 }
 
                 pub fn convert(self: Self, OtherType: type) OtherType {
@@ -189,6 +189,22 @@ test "add" {
     try testing.expect(@TypeOf(offset3) == OffsetUnit64);
 }
 
+test "sub" {
+    const offset1 = OffsetUnit32.init(2.0).sub(AbsoluteUnit64.init(1.0));
+    try testing.expect(offset1.eql(OffsetUnit32.init(1.0)));
+    try testing.expect(@TypeOf(offset1) == OffsetUnit64);
+}
+
+test "diff" {
+    const absolute1 = OffsetUnit32.init(2.0).diff(OffsetUnit64.init(1.0));
+    try testing.expect(absolute1.value == 1.0);
+    try testing.expect(@TypeOf(absolute1) == AbsoluteUnit64);
+}
+
+test "fromAbsolute" {
+    const offsetHalf = OffsetUnit64.fromAbsolute(AbsoluteUnit64.init(1.0));
+    try testing.expect(offsetHalf.value == 0.5);
+}
 
 const smaller_namespace = struct {
     fn Of(Scalar: type) type {
