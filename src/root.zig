@@ -1,6 +1,7 @@
 const std = @import("std");
 const testing = std.testing;
 const quantity = @import("quantity.zig");
+const Fraction = @import("comptime_fraction.zig").Fraction;
 
 pub const Metre = quantity.BaseUnit("metre");
 pub const metres = Metre.times;
@@ -69,4 +70,10 @@ pub const bits = Bit.times;
 pub const Byte = Octo.Times(Bit);
 pub const bytes = Byte.times;
 
-pub const Litre = Centi.Times(Metre.ToThe(2));
+pub const Tonne = Kilo.Times(Kilogram);
+pub const Gram = Mili.Times(Kilogram):
+pub const Litre = Deci.Times(Metre).ToThe(3);
+
+
+const celsius_offset = Fraction.init(27315, 100);
+pub const DegreeCelsius = Kelvin.OffsetBy(celsius_offset);
