@@ -34,7 +34,7 @@ pub fn Factorization(size: comptime_int, Type: type, before: fn (lhs: Type, rhs:
                 if (s.base != o.base) {
                     return false;
                 }
-                if (!s.power.eq(o.power)) {
+                if (!s.power.eql(o.power)) {
                     return false;
                 }
             }
@@ -60,7 +60,7 @@ pub fn Factorization(size: comptime_int, Type: type, before: fn (lhs: Type, rhs:
 
                     if (eq(self_base, other_base)) {
                         const sum = self_power.add(other_power);
-                        if (!sum.eq(Fraction.fromInt(0))) {
+                        if (!sum.eql(Fraction.fromInt(0))) {
                             count += 1;
                         }
                         self_index += 1;
@@ -99,7 +99,7 @@ pub fn Factorization(size: comptime_int, Type: type, before: fn (lhs: Type, rhs:
 
                     if (eq(self_base, other_base)) {
                         const sum = self_power.add(other_power);
-                        if (!sum.eq(Fraction.fromInt(0))) {
+                        if (!sum.eql(Fraction.fromInt(0))) {
                             factors[count] = Factor(Type){ .base = self_base, .power = sum };
                             count += 1;
                         }
@@ -128,14 +128,14 @@ pub fn Factorization(size: comptime_int, Type: type, before: fn (lhs: Type, rhs:
         }
 
         fn PowType(exponent: Fraction) type {
-            if (exponent.eq(Fraction.fromInt(0))) {
+            if (exponent.eql(Fraction.fromInt(0))) {
                 return OfSize(0);
             }
             return Self;
         }
 
         pub fn pow(self: Self, exponent: Fraction) PowType(exponent) {
-            if (exponent.eq(Fraction.fromInt(0))) {
+            if (exponent.eql(Fraction.fromInt(0))) {
                 return .{ .factors = .{} };
             }
             comptime var factors: [len]Factor(Type) = undefined;

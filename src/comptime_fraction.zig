@@ -28,7 +28,7 @@ pub const ComptimeFraction = struct {
         return init(n, 1);
     }
 
-    pub fn eq(self: Self, other: Self) bool {
+    pub fn eql(self: Self, other: Self) bool {
         return (self.numerator == other.numerator) and (self.denominator == other.denominator);
     }
 
@@ -92,19 +92,19 @@ test "fromInt" {
     try testing.expect(five.denominator == 1);
 }
 
-test "eq" {
+test "eql" {
     const half = ComptimeFraction.init(1, 2);
-    try testing.expect(half.eq(half));
+    try testing.expect(half.eql(half));
     const third = ComptimeFraction.init(1, 3);
-    try testing.expect(!half.eq(third));
+    try testing.expect(!half.eql(third));
     const one = ComptimeFraction.fromInt(1);
-    try testing.expect(one.eq(one));
+    try testing.expect(one.eql(one));
 }
 
 test "neg" {
     const half = ComptimeFraction.init(1, 2);
     const minus_half = ComptimeFraction.init(-1, 2);
-    try testing.expect(half.neg().eq(minus_half));
+    try testing.expect(half.neg().eql(minus_half));
 }
 
 test "add" {
@@ -112,12 +112,12 @@ test "add" {
     const third = ComptimeFraction.init(1, 3);
     const five_sixths = ComptimeFraction.init(5, 6);
 
-    try testing.expect(half.add(third).eq(five_sixths));
+    try testing.expect(half.add(third).eql(five_sixths));
 
     const minus_third = ComptimeFraction.init(-1, 3);
     const sixth = ComptimeFraction.init(1, 6);
 
-    try testing.expect(half.add(minus_third).eq(sixth));
+    try testing.expect(half.add(minus_third).eql(sixth));
 }
 
 test "sub" {
@@ -125,21 +125,21 @@ test "sub" {
     const third = ComptimeFraction.init(1, 3);
     const sixth = ComptimeFraction.init(1, 6);
 
-    try testing.expect(half.sub(third).eq(sixth));
+    try testing.expect(half.sub(third).eql(sixth));
 
     const minus_third = ComptimeFraction.init(-1, 3);
     const five_sixths = ComptimeFraction.init(5, 6);
 
-    try testing.expect(half.sub(minus_third).eq(five_sixths));
-    try testing.expect(half.sub(five_sixths).eq(minus_third));
+    try testing.expect(half.sub(minus_third).eql(five_sixths));
+    try testing.expect(half.sub(five_sixths).eql(minus_third));
 }
 
 test "reciprocal" {
     const two_thirds = ComptimeFraction.init(2, 3);
     const three_halves = ComptimeFraction.init(3, 2);
 
-    try testing.expect(two_thirds.reciprocal().eq(three_halves));
-    try testing.expect(three_halves.reciprocal().eq(two_thirds));
+    try testing.expect(two_thirds.reciprocal().eql(three_halves));
+    try testing.expect(three_halves.reciprocal().eql(two_thirds));
 }
 
 test "mul" {
@@ -147,7 +147,7 @@ test "mul" {
     const two_thirds = ComptimeFraction.init(2, 3);
     const sixth = ComptimeFraction.init(1, 6);
 
-    try testing.expect(quarter.mul(two_thirds).eq(sixth));
+    try testing.expect(quarter.mul(two_thirds).eql(sixth));
 }
 
 test "div" {
@@ -155,7 +155,7 @@ test "div" {
     const three_halves = ComptimeFraction.init(3, 2);
     const sixth = ComptimeFraction.init(1, 6);
 
-    try testing.expect(quarter.div(three_halves).eq(sixth));
+    try testing.expect(quarter.div(three_halves).eql(sixth));
 }
 
 test "toFloat" {
