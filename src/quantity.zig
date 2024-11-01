@@ -220,32 +220,32 @@ test "Per" {
     try testing.expect(Metre.Per(MetrePerDegree) == Degree);
 }
 
-// const two = Fraction.fromInt(2);
-// const MetrePerDegreeAllSquared32 = Unit(f32, metre.div(radian).pow(two), one_over_180.reciprocal().pow(two), pi.reciprocal().pow(two));
-// const half = Fraction.init(1, 2);
-// const RootMetrePerDegree32 = Unit(f32, metre.div(radian).pow(half), one_over_180.reciprocal().pow(half), pi.reciprocal().pow(half));
-// const three_halves = Fraction.init(3, 2);
-// const RootMetrePerDegreeAllCubed32 =
-//     Unit(f32, metre.div(radian).pow(three_halves), one_over_180
-//     .reciprocal().pow(three_halves), pi.reciprocal().pow(three_halves));
+const two = Fraction.fromInt(2);
+const MetrePerDegreeAllSquared = Unit(metre.div(radian).pow(two), one_over_180.reciprocal().pow(two), pi.reciprocal().pow(two));
+const half = Fraction.init(1, 2);
+const RootMetrePerDegree = Unit(metre.div(radian).pow(half), one_over_180.reciprocal().pow(half), pi.reciprocal().pow(half));
+const three_halves = Fraction.init(3, 2);
+const RootMetrePerDegreeAllCubed =
+    Unit(metre.div(radian).pow(three_halves), one_over_180
+    .reciprocal().pow(three_halves), pi.reciprocal().pow(three_halves));
 
-// test "Pow" {
-//     try testing.expect(MetrePerDegree32.Pow(two) == MetrePerDegreeAllSquared32);
-//     try testing.expect(MetrePerDegree32.Pow(half) == RootMetrePerDegree32);
-//     try testing.expect(MetrePerDegreeAllSquared32.Pow(half) == MetrePerDegree32);
-//     try testing.expect(RootMetrePerDegree32.Pow(two) == MetrePerDegree32);
-//     try testing.expect(MetrePerDegree32.Pow(three_halves) == RootMetrePerDegreeAllCubed32);
-// }
+test "Pow" {
+    try testing.expect(MetrePerDegree.Pow(two) == MetrePerDegreeAllSquared);
+    try testing.expect(MetrePerDegree.Pow(half) == RootMetrePerDegree);
+    try testing.expect(MetrePerDegreeAllSquared.Pow(half) == MetrePerDegree);
+    try testing.expect(RootMetrePerDegree.Pow(two) == MetrePerDegree);
+    try testing.expect(MetrePerDegree.Pow(three_halves) == RootMetrePerDegreeAllCubed);
+}
 
-// test "ToThe" {
-//     try testing.expect(MetrePerDegree32.ToThe(2) == MetrePerDegreeAllSquared32);
-//     try testing.expect(RootMetrePerDegree32.ToThe(2) == MetrePerDegree32);
-// }
+test "ToThe" {
+    try testing.expect(MetrePerDegree.ToThe(2) == MetrePerDegreeAllSquared);
+    try testing.expect(RootMetrePerDegree.ToThe(2) == MetrePerDegree);
+}
 
-// test "Root" {
-//     try testing.expect(MetrePerDegreeAllSquared32.Root(2) == MetrePerDegree32);
-//     try testing.expect(MetrePerDegree32.Root(2) == RootMetrePerDegree32);
-// }
+test "Root" {
+    try testing.expect(MetrePerDegreeAllSquared.Root(2) == MetrePerDegree);
+    try testing.expect(MetrePerDegree.Root(2) == RootMetrePerDegree);
+}
 
 const Degree32 = Degree.Of(f32);
 const Degree16 = Degree.Of(f16);
