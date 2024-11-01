@@ -21,7 +21,7 @@ pub fn OffsetUnit(AbsoluteUnit: type, offset_by: Fraction) type {
         }
 
         pub fn TimesFraction(multiplier: Fraction) type {
-            return OffsetUnit(AbsoluteUnit.TimesFraction(fraction), offset_by.div(multiplier));
+            return OffsetUnit(AbsoluteUnit.TimesFraction(multiplier), offset_by.div(multiplier));
         }
 
         pub fn Of(Scalar: type) type {

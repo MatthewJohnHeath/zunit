@@ -251,13 +251,16 @@ test "Root" {
     try testing.expect(MetrePerDegree.Root(2) == RootMetrePerDegree);
 }
 
-const Metre32 = Metre.Of(f32);
-
 test "OffsetBy" {
     try testing.expect(Metre.OffsetBy(Fraction.fromInt(-2)).offset.value == -2);
     try testing.expect(Metre.OffsetBy(Fraction.fromInt(0)) == Metre);
 }
 
+test "times" {
+    try testing.expect(Metre.times(2).value == 2);
+}
+
+const Metre32 = Metre.Of(f32);
 const Degree32 = Degree.Of(f32);
 const Degree16 = Degree.Of(f16);
 
