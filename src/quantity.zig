@@ -163,15 +163,15 @@ fn Unit(comptime base_units_in: anytype, comptime prime_powers_in: anytype, comp
                     return .{ .value = self.value / other.value };
                 }
 
-                pub fn pow(self: Self, power: Fraction) Pow(power).Quanity(Scalar) {
+                pub fn pow(self: Self, power: Fraction) Pow(power).Of(Scalar) {
                     return .{ .value = std.math.pow(@TypeOf(self.value), self.value, power.toFloat()) };
                 }
 
-                pub fn powi(self: Self, power: comptime_int) ToThe(power).Quanity(Scalar) {
+                pub fn powi(self: Self, power: comptime_int) ToThe(power).Of(Scalar) {
                     return self.pow(Fraction.fromInt(power));
                 }
 
-                pub fn root(self: Self, power: comptime_int) Root(power).Quanity(Scalar) {
+                pub fn root(self: Self, power: comptime_int) Root(power).Of(Scalar) {
                     return self.pow(Fraction.fromInt(power).reciprocal());
                 }
 
@@ -360,10 +360,12 @@ test "reciprocal" {
     try testing.expect(two_degrees.reciprocal().eql(half_per_degree));
 }
 
-// test "pow" {
-//     try testing.expect(MetrePerDegree32.init(2.0).pow(two).eql(MetrePerDegreeAllSquared32.init(4.0)));
-//     try testing.expect(MetrePerDegree32.init(4.0).pow(three_halves).eql(RootMetrePerDegreeAllCubed32.init(8.0)));
-// }
+const MetrePerDegree32 = MetrePerDegree.Of(f32);
+const MetrePerDegreeAllSquared32 = MetrePerDegreeAllSquared.Of(f32);
+test "pow" {
+    try testing.expect(MetrePerDegree32.init(2.0).pow(two).eql(MetrePerDegreeAllSquared32.init(4.0)));
+    try testing.expect(MetrePerDegree32.init(4.0).pow(three_halves).eql(RootMetrePerDegreeAllCubed.Of(f32).init(8.0)));
+}
 
 // test "powi" {
 //     try testing.expect(MetrePerDegree32.init(2.0).powi(2).eql(MetrePerDegreeAllSquared32.init(4.0)));
