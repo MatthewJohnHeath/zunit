@@ -12,6 +12,8 @@ const FloatFactor = factorization.Factorization(1, comptime_float, float_compare
 
 const one = factorization.primeFactorization(1);
 
+const One = Unit(BaseUnitFactor.one, one, FloatFactor.one);
+
 pub fn BaseUnit(name: []const u8) type {
     return Unit(BaseUnitFactor.fromBase(name), one, FloatFactor.one);
 }
