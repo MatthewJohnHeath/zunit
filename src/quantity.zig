@@ -194,12 +194,63 @@ fn Unit(comptime base_units_in: anytype, comptime prime_powers_in: anytype, comp
 const radian = BaseUnitFactor.fromBase("radian");
 const one_over_180 = factorization.primeFactorization(180).reciprocal();
 const pi = FloatFactor.fromBase(std.math.pi);
-const Degree32 = Unit(radian, one_over_180, pi).Of(f32);
-const Degree16 = Unit(radian, one_over_180, pi).Of(f16);
+const Degree = Unit(radian, one_over_180, pi);
 
 const metre = BaseUnitFactor.fromBase("metre");
 const f_one = FloatFactor.one;
-const Metre32 = Unit(metre, one, f_one).Of(f32);
+const Metre = Unit(metre, one, f_one);
+
+const MetreDegree = Unit(metre.mul(radian), one_over_180, pi);
+
+test "Times" {
+    try testing.expect(Metre.Times(Degree) == MetreDegree);
+    try testing.expect(Degree.Times(Metre) == MetreDegree);
+}
+
+const PerDegree = Unit(radian.reciprocal(), factorization.primeFactorization(180), pi.reciprocal());
+
+test "Reciprocal" {
+    try testing.expect(Degree.Reciprocal == PerDegree);
+}
+
+const MetrePerDegree = Unit(metre.div(radian), one_over_180.reciprocal(), pi.reciprocal());
+
+test "Per" {
+    try testing.expect(Metre.Per(Degree) == MetrePerDegree);
+    try testing.expect(Metre.Per(MetrePerDegree) == Degree);
+}
+
+// const two = Fraction.fromInt(2);
+// const MetrePerDegreeAllSquared32 = Unit(f32, metre.div(radian).pow(two), one_over_180.reciprocal().pow(two), pi.reciprocal().pow(two));
+// const half = Fraction.init(1, 2);
+// const RootMetrePerDegree32 = Unit(f32, metre.div(radian).pow(half), one_over_180.reciprocal().pow(half), pi.reciprocal().pow(half));
+// const three_halves = Fraction.init(3, 2);
+// const RootMetrePerDegreeAllCubed32 =
+//     Unit(f32, metre.div(radian).pow(three_halves), one_over_180
+//     .reciprocal().pow(three_halves), pi.reciprocal().pow(three_halves));
+
+// test "Pow" {
+//     try testing.expect(MetrePerDegree32.Pow(two) == MetrePerDegreeAllSquared32);
+//     try testing.expect(MetrePerDegree32.Pow(half) == RootMetrePerDegree32);
+//     try testing.expect(MetrePerDegreeAllSquared32.Pow(half) == MetrePerDegree32);
+//     try testing.expect(RootMetrePerDegree32.Pow(two) == MetrePerDegree32);
+//     try testing.expect(MetrePerDegree32.Pow(three_halves) == RootMetrePerDegreeAllCubed32);
+// }
+
+// test "ToThe" {
+//     try testing.expect(MetrePerDegree32.ToThe(2) == MetrePerDegreeAllSquared32);
+//     try testing.expect(RootMetrePerDegree32.ToThe(2) == MetrePerDegree32);
+// }
+
+// test "Root" {
+//     try testing.expect(MetrePerDegreeAllSquared32.Root(2) == MetrePerDegree32);
+//     try testing.expect(MetrePerDegree32.Root(2) == RootMetrePerDegree32);
+// }
+
+const Degree32 = Degree.Of(f32);
+const Degree16 = Degree.Of(f16);
+
+const Metre32 = Metre.Of(f32);
 
 test "sameUnits" {
     try testing.expect(Degree32.sameUnits(Degree16));
@@ -293,11 +344,6 @@ test "sub" {
 const metre_radian = metre.mul(radian);
 const MetreDegree32 = Unit(metre_radian, one_over_180, pi).Of(f32);
 
-// test "Times" {
-//     try testing.expect(Metre32.Times(Degree32) == MetreDegree32);
-//     try testing.expect(Degree32.Times(Metre32) == MetreDegree32);
-// }
-
 test "mul" {
     const two_metres = Metre32.init(2.0);
     const three_degrees = Degree32.init(3.0);
@@ -306,11 +352,7 @@ test "mul" {
     try testing.expect(two_metres.mul(three_degrees).eql(six_degree_metres));
 }
 
-const PerDegree32 = Unit(radian.reciprocal(), factorization.primeFactorization(180), pi.reciprocal()).Of(f32);
-
-// test "Reciprocal" {
-//     try testing.expect(Degree32.Reciprocal == PerDegree32);
-// }
+const PerDegree32 = PerDegree.Of(f32);
 
 test "reciprocal" {
     const two_degrees = Degree32.init(2.0);
@@ -318,54 +360,13 @@ test "reciprocal" {
     try testing.expect(two_degrees.reciprocal().eql(half_per_degree));
 }
 
-// const MetrePerDegree32 = Unit(f32, metre.div(radian), one_over_180.reciprocal(), pi.reciprocal());
-
-// test "Per" {
-//     try testing.expect(Metre32.Per(Degree32) == MetrePerDegree32);
-//     try testing.expect(Metre32.Per(MetrePerDegree32) == Degree32);
-// }
-
-// test "div" {
-//     const one_metre = Metre32.init(1.0);
-//     const two_degrees = Degree32.init(2.0);
-//     const half_metre_per_degree = MetrePerDegree32.init(0.5);
-//     try testing.expect(one_metre.div(two_degrees).eql(half_metre_per_degree));
-// }
-
-// const two = Fraction.fromInt(2);
-// const MetrePerDegreeAllSquared32 = Unit(f32, metre.div(radian).pow(two), one_over_180.reciprocal().pow(two), pi.reciprocal().pow(two));
-// const half = Fraction.init(1, 2);
-// const RootMetrePerDegree32 = Unit(f32, metre.div(radian).pow(half), one_over_180.reciprocal().pow(half), pi.reciprocal().pow(half));
-// const three_halves = Fraction.init(3, 2);
-// const RootMetrePerDegreeAllCubed32 =
-//     Unit(f32, metre.div(radian).pow(three_halves), one_over_180
-//     .reciprocal().pow(three_halves), pi.reciprocal().pow(three_halves));
-
-// test "Pow" {
-//     try testing.expect(MetrePerDegree32.Pow(two) == MetrePerDegreeAllSquared32);
-//     try testing.expect(MetrePerDegree32.Pow(half) == RootMetrePerDegree32);
-//     try testing.expect(MetrePerDegreeAllSquared32.Pow(half) == MetrePerDegree32);
-//     try testing.expect(RootMetrePerDegree32.Pow(two) == MetrePerDegree32);
-//     try testing.expect(MetrePerDegree32.Pow(three_halves) == RootMetrePerDegreeAllCubed32);
-// }
-
 // test "pow" {
 //     try testing.expect(MetrePerDegree32.init(2.0).pow(two).eql(MetrePerDegreeAllSquared32.init(4.0)));
 //     try testing.expect(MetrePerDegree32.init(4.0).pow(three_halves).eql(RootMetrePerDegreeAllCubed32.init(8.0)));
 // }
 
-// test "ToThe" {
-//     try testing.expect(MetrePerDegree32.ToThe(2) == MetrePerDegreeAllSquared32);
-//     try testing.expect(RootMetrePerDegree32.ToThe(2) == MetrePerDegree32);
-// }
-
 // test "powi" {
 //     try testing.expect(MetrePerDegree32.init(2.0).powi(2).eql(MetrePerDegreeAllSquared32.init(4.0)));
-// }
-
-// test "Root" {
-//     try testing.expect(MetrePerDegreeAllSquared32.Root(2) == MetrePerDegree32);
-//     try testing.expect(MetrePerDegree32.Root(2) == RootMetrePerDegree32);
 // }
 
 // test "root" {
