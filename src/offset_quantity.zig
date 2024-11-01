@@ -32,7 +32,7 @@ pub fn OffsetUnit(AbsoluteUnit: type, offset_by: Fraction) type {
                 const UnitType = Outer;
                 pub const Absolute = AbsoluteUnit.Of(Scalar);
 
-                fn init(val: Scalar) Self {
+                pub fn init(val: Scalar) Self {
                     return .{ .value = val };
                 }
 
@@ -127,13 +127,13 @@ const small_namespace = struct {
             const UnitType = Outer;
 
             fn init(val: Scalar) Self {
-               return  .{ .value = val };
+                return .{ .value = val };
             }
             fn convert(self: Self, OtherType: type) OtherType {
                 return OtherType.init(self.value);
             }
-            fn add(self:Self, other : anytype) Self{
-                return .{.value = self.value + other.value};
+            fn add(self: Self, other: anytype) Self {
+                return .{ .value = self.value + other.value };
             }
         };
     }
@@ -221,8 +221,8 @@ const smaller_namespace = struct {
             const Self = @This();
 
             fn init(val: anytype) Self {
-                const x:Scalar = @floatCast(val);
-                return .{ .x = x};
+                const x: Scalar = @floatCast(val);
+                return .{ .x = x };
             }
         };
     }

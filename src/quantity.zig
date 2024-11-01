@@ -16,8 +16,12 @@ pub fn BaseUnit(name: []const u8) type {
     return Unit(BaseUnitFactor.fromBase(name), one, FloatFactor.one);
 }
 
+fn FractionalPrefixFromFraction(frac: Fraction) type {
+    return Unit(BaseUnitFactor.one, factorization.fractionInPrimes(frac), FloatFactor.one);
+}
+
 pub fn FractionalPrefix(numerator: comptime_int, denominator: comptime_int) type {
-    return Unit(BaseUnitFactor.one, factorization.fractionInPrimes(Fraction.init(numerator, denominator)), FloatFactor.one);
+    return FractionalPrefixFromFraction(Fraction.init(numerator, denominator));
 }
 
 pub fn IntPrefix(number: comptime_int) type {
@@ -50,7 +54,7 @@ fn Unit(comptime base_units_in: anytype, comptime prime_powers_in: anytype, comp
         }
 
         pub fn TimesFraction(multiplier: Fraction) type {
-            return Times(FractionalPrefix(Fraction.init(multiplier)));
+            return Times(FractionalPrefixFromFraction(multiplier));
         }
 
         pub fn Pow(power: Fraction) type {
@@ -181,7 +185,7 @@ fn Unit(comptime base_units_in: anytype, comptime prime_powers_in: anytype, comp
                 const Absolute = Self;
 
                 pub fn convert(self: Self, OtherType: type) OtherType {
-                    const QuotientType = Self.Per(OtherType.Absolute);
+                    const QuotientType = UnitType.Per(OtherType.Absolute.UnitType);
                     const multiple = comptime QuotientType.prime_powers.toFloat() * QuotientType.float_powers.toFloat();
                     const absolute_other = OtherType.Absolute{ .value = @floatCast(self.value * multiple) };
                     return OtherType.fromAbsolute(absolute_other);
@@ -247,10 +251,15 @@ test "Root" {
     try testing.expect(MetrePerDegree.Root(2) == RootMetrePerDegree);
 }
 
+const Metre32 = Metre.Of(f32);
+
+test "OffsetBy" {
+    try testing.expect(Metre.OffsetBy(Fraction.fromInt(-2)).offset.value == -2);
+    try testing.expect(Metre.OffsetBy(Fraction.fromInt(0)) == Metre);
+}
+
 const Degree32 = Degree.Of(f32);
 const Degree16 = Degree.Of(f16);
-
-const Metre32 = Metre.Of(f32);
 
 test "sameUnits" {
     try testing.expect(Degree32.sameUnits(Degree16));
@@ -367,16 +376,20 @@ test "pow" {
     try testing.expect(MetrePerDegree32.init(4.0).pow(three_halves).eql(RootMetrePerDegreeAllCubed.Of(f32).init(8.0)));
 }
 
-// test "powi" {
-//     try testing.expect(MetrePerDegree32.init(2.0).powi(2).eql(MetrePerDegreeAllSquared32.init(4.0)));
-// }
+test "powi" {
+    try testing.expect(MetrePerDegree32.init(2.0).powi(2).eql(MetrePerDegreeAllSquared32.init(4.0)));
+}
 
-// test "root" {
-//     try testing.expect(MetrePerDegreeAllSquared32.init(4.0).root(2).eql(MetrePerDegree32.init(2.0)));
-// }
+test "root" {
+    try testing.expect(MetrePerDegreeAllSquared32.init(4.0).root(2).eql(MetrePerDegree32.init(2.0)));
+}
 
-// test "convert" {
-//     const Radian32 = Unit(f32, radian, one, f_one);
-//     const epsilon = 0.0000001;
-//     try testing.expect(std.math.approxEqAbs(f32, Degree32.init(180.0).convert(Radian32).value, Radian32.init(std.math.pi).value, epsilon));
-// }
+test "convert" {
+    const Radian32 = Unit(radian, one, f_one).Of(f32);
+    const epsilon = 0.0000001;
+    try testing.expect(std.math.approxEqAbs(f32, Degree32.init(180.0).convert(Radian32).value, std.math.pi, epsilon));
+
+    //convert to unit wth offset
+    const InchesFromOverThere32 = Metre.TimesFraction(Fraction.init(256, 10000)).OffsetBy(Fraction.fromInt(4)).Of(f32);
+    try testing.expect(std.math.approxEqAbs(f32, InchesFromOverThere32.init(1.0).convert(Metre32).value, 5.0 * 0.0256, epsilon));
+}
