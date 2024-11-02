@@ -151,10 +151,27 @@ fn Unit(comptime base_units_in: anytype, comptime prime_powers_in: anytype, comp
                 }
                 pub const diff = sub;
 
+                fn ValueType(T: anytype) type {
+                    return switch (@typeInfo(T)) {
+                        .ComptimeFloat, .Float => T,
+                        else => T.Scalar,
+                    };
+                }
+
+                fn valueOf(other: anytype) @TypeOf(other) {
+                    return switch (@typeInfo(@TypeOf(other))) {
+                        .ComptimeFloat, .Float => other,
+                        else => other.value,
+                    };
+                }
+
                 fn MulType(Other: type) type {
                     const self: Self = undefined;
                     const other: Other = undefined;
-                    return Times(Other.UnitType).Of(@TypeOf(self.value, other.value));
+                    return switch (@typeInfo(Other)) {
+                        .ComptimeFloat, .Float => Self,
+                        else => Times(Other.UnitType).Of(@TypeOf(self.value, other.value)),
+                    };
                 }
 
                 pub fn mul(self: Self, other: anytype) MulType(@TypeOf(other)) {
