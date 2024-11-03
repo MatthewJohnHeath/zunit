@@ -1,9 +1,16 @@
 const std = @import("std");
 const testing = std.testing;
 const quantity = @import("quantity.zig");
-const Fraction = @import("comptime_fraction.zig").ComptimeFraction;
 
-pub const Metre = quantity.BaseUnit("metre");
+pub const Fraction = @import("comptime_fraction.zig").ComptimeFraction;
+pub const One = quantity.One;
+pub const BaseUnit = quantity.BaseUnit;
+pub const FractionalPrefix = quantity.FractionalPrefix;
+pub const IntPrefix = quantity.IntPrefix;
+pub const PrimePrefix = quantity.PrimePrefix;
+pub const FloatPrefix = quantity.FloatPrefix;
+
+pub const Metre = BaseUnit("metre");
 pub const metres = Metre.times;
 
 test "metres" {
@@ -11,32 +18,35 @@ test "metres" {
     const two_metres = metres(two);
     try testing.expect(two_metres.value == two);
     try testing.expect(@TypeOf(two_metres) == Metre.Of(f32));
+    try testing.expect(Metre.Per(One) == Metre);
+    try testing.expect(metres(1.0).gt(metres(-1.0)));
+    try testing.expect(Metre.Of(f16).init(2.0).eql(Metre.Of(f64).init(2.0)));
 }
 
-pub const Second = quantity.BaseUnit("second");
+pub const Second = BaseUnit("second");
 pub const seconds = Second.times;
 
-pub const Kilogram = quantity.BaseUnit("kilogram");
+pub const Kilogram = BaseUnit("kilogram");
 pub const kilograms = Kilogram.times;
 
-pub const Ampere = quantity.BaseUnit("ampere");
+pub const Ampere = BaseUnit("ampere");
 pub const amperes = Ampere.times;
 
-pub const Kelvin = quantity.BaseUnit("kelvin");
+pub const Kelvin = BaseUnit("kelvin");
 pub const kelvins = Kelvin.times;
 
-pub const Mole = quantity.BaseUnit("mole");
+pub const Mole = BaseUnit("mole");
 pub const moles = Mole.times;
 
-pub const Candela = quantity.BaseUnit("candela");
+pub const Candela = BaseUnit("candela");
 pub const candelas = Candela.times;
 
-pub const Radian = quantity.BaseUnit("radian");
+pub const Radian = BaseUnit("radian");
 pub const radians = Radian.times;
 
-pub const Rot = Radian.Times(quantity.FloatPrefix(2.0 * std.math.pi));
+pub const Rot = Radian.Times(FloatPrefix(2.0 * std.math.pi));
 pub const rot = Rot.times;
-pub const Degree = Rot.Times(quantity.IntPrefix(360).Reciprocal);
+pub const Degree = Rot.Times(IntPrefix(360).Reciprocal);
 pub const degrees = Degree.times;
 
 test "degrees" {
@@ -44,7 +54,7 @@ test "degrees" {
     try testing.expect(std.math.approxEqAbs(f32, degrees(180.0).convert(Radian.Of(f32)).value, std.math.pi, epsilon));
 }
 
-pub const Bi = quantity.PrimePrefix(2);
+pub const Bi = PrimePrefix(2);
 pub const Semi = Bi.Reciprocal;
 pub const Octo = Bi.ToThe(3);
 pub const Kibi = Bi.ToThe(10);
@@ -52,7 +62,7 @@ pub const Mebi = Kibi.ToThe(2);
 pub const Gibi = Kibi.ToThe(3);
 pub const Tebi = Kibi.ToThe(4);
 
-pub const Deca = quantity.IntPrefix(10);
+pub const Deca = IntPrefix(10);
 pub const Deci = Deca.Reciprocal;
 pub const Hecto = Deca.ToThe(2);
 pub const Centi = Hecto.Reciprocal;
@@ -67,9 +77,9 @@ pub const Pico = Tera.Reciprocal;
 pub const Peta = Deca.ToThe(15);
 pub const Femto = Peta.Reciprocal;
 
-pub const Pixel = quantity.BaseUnit("pixel");
+pub const Pixel = BaseUnit("pixel");
 pub const pixels = Pixel.times;
-pub const Bit = quantity.BaseUnit("bit");
+pub const Bit = BaseUnit("bit");
 pub const bits = Bit.times;
 pub const Byte = Octo.Times(Bit);
 pub const bytes = Byte.times;

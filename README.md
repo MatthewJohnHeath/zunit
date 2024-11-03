@@ -29,7 +29,7 @@ This is a library for creating and operating upon floating-point values with uni
 ```
 - Normal Zig peer-type resolution should apply between the scalar types (as long as the units are right).  
 ```   
-    try testing.expect(bytes(1.0).convert(Bit.Of(f32)).eql(bits(8.0)));
+    try testing.expect(Metre.Of(f16).init(2.0).eql(Metre.Of(f64).init(2.0)));
 ```
 - Unexpected type mismatches due to floating-point errors on powers, scalar prefixes, etc. ***cannot possibly*** occur. 
 
