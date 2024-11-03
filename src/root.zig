@@ -99,11 +99,13 @@ test "litre" {
 }
 
 pub const DegreeCelsius = Kelvin.OffsetBy(Fraction.init(27315, 100));
+pub const degreesCelsius = DegreeCelsius.times;
 pub const DegreeFahrenheit = DegreeCelsius.TimesFraction(Fraction.init(5, 9)).OffsetBy(Fraction.fromInt(-32));
+pub const degreesFahrenehit = DegreeFahrenheit.times;
 
 test "boiling point of water" {
     const epsilon = 0.0000001;
-    try testing.expect(std.math.approxEqAbs(f64, DegreeCelsius.times(100.0).convert(DegreeFahrenheit.Of(f64)).value, 212.0, epsilon));
-    try testing.expect(DegreeFahrenheit.times(212.0).convert(DegreeCelsius.Of(f64)).eql(DegreeCelsius.times(100.0)));
-    try testing.expect(DegreeFahrenheit.times(212.0).convert(Kelvin.Of(f64)).eql(Kelvin.times(373.15)));
+    try testing.expect(std.math.approxEqAbs(f64, degreesCelsius(100.0).convert(DegreeFahrenheit.Of(f64)).value, 212.0, epsilon));
+    try testing.expect(degreesFahrenehit(212.0).convert(DegreeCelsius.Of(f64)).eql(degreesCelsius(100.0)));
+    try testing.expect(degreesFahrenehit(212.0).convert(Kelvin.Of(f64)).eql(kelvins(373.15)));
 }
