@@ -30,7 +30,7 @@ pub fn build(b: *std.Build) void {
     b.installArtifact(lib);
 
     const exe = b.addExecutable(.{
-        .name = "typed_lin_alg",
+        .name = "zunit",
         .root_source_file = b.path("src/main.zig"),
         .target = target,
         .optimize = optimize,

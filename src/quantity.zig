@@ -9,6 +9,8 @@ const OffsetUnit = @import("offset_quantity.zig").OffsetUnit;
 const BaseUnitFactor = factorization.Factorization(1, []const u8, compare.string_before, compare.string_eql);
 const float_compare = compare.NumberCompare(comptime_float);
 const FloatFactor = factorization.Factorization(1, comptime_float, float_compare.before, float_compare.eql);
+const int_compare = compare.NumberCompare(comptime_int);
+const IntFactor = factorization.Factorization(1, comptime_int, int_compare.before, int_compare.eql);
 
 const one = factorization.primeFactorization(1);
 
@@ -27,11 +29,15 @@ pub fn FractionalPrefix(numerator: comptime_int, denominator: comptime_int) type
 }
 
 pub fn IntPrefix(number: comptime_int) type {
-    return FractionalPrefix(Fraction.fromInt(number));
+    return FractionalPrefixFromFraction(Fraction.fromInt(number));
+}
+
+pub fn PrimePrefix(number: comptime_int) type {
+    return Unit(BaseUnitFactor.one, IntFactor.fromBase(number), FloatFactor.one);
 }
 
 pub fn FloatPrefix(number: comptime_float) type {
-    return Unit(BaseUnit.one, one, FloatFactor.fromBase(number));
+    return Unit(BaseUnitFactor.one, one, FloatFactor.fromBase(number));
 }
 
 fn Unit(comptime base_units_in: anytype, comptime prime_powers_in: anytype, comptime float_powers_in: anytype) type {

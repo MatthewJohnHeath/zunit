@@ -33,14 +33,17 @@ pub const candelas = Candela.times;
 
 pub const Radian = quantity.BaseUnit("radian");
 pub const radians = Radian.times;
-
 pub const Rot = Radian.Times(quantity.FloatPrefix(2.0 * std.math.pi));
 pub const rot = Rot.times;
-
 pub const Degree = Rot.Times(quantity.IntPrefix(360).Reciprocal);
-pub const degree = Degree.times;
+pub const degrees = Degree.times;
 
-pub const Bi = quantity.IntPrefix(2);
+test "degrees" {
+    const epsilon = 0.0000001;
+    try testing.expect(std.math.approxEqAbs(f32, degrees(180.0).convert(Radian.Of(f32)).value, std.math.pi, epsilon));
+}
+
+pub const Bi = quantity.PrimePrefix(2);
 pub const Octo = Bi.ToThe(3);
 pub const Kibi = Bi.ToThe(10);
 pub const Mebi = Kibi.ToThe(2);
@@ -69,6 +72,9 @@ pub const Bit = quantity.BaseUnit("bit");
 pub const bits = Bit.times;
 pub const Byte = Octo.Times(Bit);
 pub const bytes = Byte.times;
+test "bytes" {
+    try testing.expect(bytes(1.0).convert(Bit.Of(f32)).eql(bits(8.0)));
+}
 
 pub const Tonne = Kilo.Times(Kilogram);
 pub const Gram = Milli.Times(Kilogram);
