@@ -33,6 +33,7 @@ pub const candelas = Candela.times;
 
 pub const Radian = quantity.BaseUnit("radian");
 pub const radians = Radian.times;
+
 pub const Rot = Radian.Times(quantity.FloatPrefix(2.0 * std.math.pi));
 pub const rot = Rot.times;
 pub const Degree = Rot.Times(quantity.IntPrefix(360).Reciprocal);
@@ -44,12 +45,12 @@ test "degrees" {
 }
 
 pub const Bi = quantity.PrimePrefix(2);
+pub const Semi = Bi.Reciprocal;
 pub const Octo = Bi.ToThe(3);
 pub const Kibi = Bi.ToThe(10);
 pub const Mebi = Kibi.ToThe(2);
 pub const Gibi = Kibi.ToThe(3);
 pub const Tebi = Kibi.ToThe(4);
-pub const Semi = Bi.Reciprocal;
 
 pub const Deca = quantity.IntPrefix(10);
 pub const Deci = Deca.Reciprocal;
@@ -77,8 +78,15 @@ test "bytes" {
 }
 
 pub const Tonne = Kilo.Times(Kilogram);
+pub const tonnes = Tonne.times;
 pub const Gram = Milli.Times(Kilogram);
+pub const gram = Gram.times;
 pub const Litre = Deci.Times(Metre).ToThe(3);
+pub const litres = Litre.times;
+test "litre" {
+    try testing.expect(Litre == Metre.ToThe(3).Times(Milli));
+    try testing.expect(Metre.ToThe(3).times(1.0).convert(Litre.Of(f32)).eql(litres(1000.0)));
+}
 
 pub const DegreeCelsius = Kelvin.OffsetBy(Fraction.init(27315, 100));
 pub const DegreeFahrenheit = DegreeCelsius.TimesFraction(Fraction.init(5, 9)).OffsetBy(Fraction.fromInt(-32));

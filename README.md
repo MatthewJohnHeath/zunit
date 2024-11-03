@@ -13,10 +13,11 @@ This is a library for creating and operating upon floating-point values with uni
 ```
     try testing.expect(bytes(1.0).convert(Bit.Of(f32).eql(bits(8.0)))); 
 ```
-- You can multiply and divide all quantities with ordinary[*](#ordinary_explanation) units. The return type of the operation will be worked out for you.
+- You can multiply and divide all quantities with ordinary[*](#ordinary_explanation) units by other such quantities and by floats. The return type of the operation will be worked out for you.
 ```   
     const speed = metres(1.25).div(seconds(0.2));
     try testing.expect(speed.eq(Metres.Per(Second).times(5.0)));
+    try testing.expect(speed.mul(2.0).eq(Metres.Per(Second).times(10.0)));
 ```
 - You can raise quantities to an arbitrary, rational power providing the power is known at compile time.
 - At runtime, values are just floats and operations are just floating point operations.
