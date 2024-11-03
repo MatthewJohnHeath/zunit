@@ -28,14 +28,16 @@ test "metres" {
     try testing.expect(Metre.Per(One) == Metre);
     try testing.expect(metres(1.0).gt(metres(-1.0)));
     try testing.expect(Metre.Of(f16).init(2.0).eql(Metre.Of(f64).init(2.0)));
+    try testing.expect(Metre.Of(f32).init(2.0).powi(3).eql(Metre.ToThe(3).times(8.0)));
 }
 
 pub const Second = BaseUnit("second");
 pub const seconds = Second.times;
-test "metres per second" {
+test "seconds" {
     const speed = metres(1.25).div(seconds(0.25));
     try testing.expect(speed.eql(Metre.Per(Second).times(5.0)));
     try testing.expect(speed.mul(2.0).eql(Metre.Per(Second).times(10.0)));
+    try testing.expect(Second.Of(f32).init(4.0).root(2).eql(Second.Root(2).times(2.0)));
 }
 
 pub const Kilogram = BaseUnit("kilogram");
