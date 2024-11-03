@@ -221,6 +221,11 @@ fn Unit(comptime base_units_in: anytype, comptime prime_powers_in: anytype, comp
 
                 pub fn convert(self: Self, OtherType: type) OtherType {
                     const QuotientType = UnitType.Per(OtherType.Absolute.UnitType);
+                    comptime {
+                        if (QuotientType.base_units.factors.len != 0) {
+                            @compileError("convert can only be called between types of the same dimensions");
+                        }
+                    }
                     const multiple = comptime QuotientType.prime_powers.toFloat() * QuotientType.float_powers.toFloat();
                     const absolute_other = OtherType.Absolute{ .value = @floatCast(self.value * multiple) };
                     return OtherType.fromAbsolute(absolute_other);

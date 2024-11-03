@@ -5,6 +5,13 @@ const quantity = @import("quantity.zig");
 pub const Fraction = @import("comptime_fraction.zig").ComptimeFraction;
 pub const One = quantity.One;
 pub const BaseUnit = quantity.BaseUnit;
+
+test "BaseUnit" {
+    const Iguana = BaseUnit("iguana");
+    const rate_of_iguanas = Iguana.times(1.0).div(seconds(0.5));
+    try testing.expect(rate_of_iguanas.eql(Iguana.Per(Second).times(2.0)));
+}
+
 pub const FractionalPrefix = quantity.FractionalPrefix;
 pub const IntPrefix = quantity.IntPrefix;
 pub const PrimePrefix = quantity.PrimePrefix;
@@ -25,6 +32,11 @@ test "metres" {
 
 pub const Second = BaseUnit("second");
 pub const seconds = Second.times;
+test "metres per second" {
+    const speed = metres(1.25).div(seconds(0.25));
+    try testing.expect(speed.eql(Metre.Per(Second).times(5.0)));
+    try testing.expect(speed.mul(2.0).eql(Metre.Per(Second).times(10.0)));
+}
 
 pub const Kilogram = BaseUnit("kilogram");
 pub const kilograms = Kilogram.times;
@@ -79,12 +91,20 @@ pub const Femto = Peta.Reciprocal;
 
 pub const Pixel = BaseUnit("pixel");
 pub const pixels = Pixel.times;
+test "pixels" {
+    try testing.expect(pixels(1.0).sub(pixels(0.5)).eql(pixels(0.5)));
+    //will not compile if below is uncommented
+    //try testing.expect(metres(1.0).gt(pixels(-1.0)));
+
+}
 pub const Bit = BaseUnit("bit");
 pub const bits = Bit.times;
 pub const Byte = Octo.Times(Bit);
 pub const bytes = Byte.times;
 test "bytes" {
     try testing.expect(bytes(1.0).convert(Bit.Of(f32)).eql(bits(8.0)));
+    //Will not compile if the following isi uncommented
+    //try testing.expect(bytes(1.0).convert(Mole.Of(f32)).eql(moles(8.0)));
 }
 
 pub const Tonne = Kilo.Times(Kilogram);
@@ -108,4 +128,13 @@ test "boiling point of water" {
     try testing.expect(std.math.approxEqAbs(f64, degreesCelsius(100.0).convert(DegreeFahrenheit.Of(f64)).value, 212.0, epsilon));
     try testing.expect(degreesFahrenehit(212.0).convert(DegreeCelsius.Of(f64)).eql(degreesCelsius(100.0)));
     try testing.expect(degreesFahrenehit(212.0).convert(Kelvin.Of(f64)).eql(kelvins(373.15)));
+}
+
+pub const Inch = FractionalPrefix(254, 10000).Times(Metre);
+pub const inches = Inch.times;
+
+test "inch" {
+    try testing.expect(inches(1.0).convert(Centi.Times(Metre).Of(f64)).eql(Centi.Times(Metre).times(2.54)));
+    //will not compile if below is uncommented
+    //try testing.expect(metres(1.0).lt(inches(1.0)));
 }
