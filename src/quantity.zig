@@ -158,13 +158,6 @@ fn Unit(comptime base_units_in: anytype, comptime prime_powers_in: anytype, comp
                     };
                 }
 
-                fn valueOf(other: anytype) @TypeOf(other) {
-                    return switch (@typeInfo(@TypeOf(other))) {
-                        .ComptimeFloat, .Float => other,
-                        else => other.value,
-                    };
-                }
-
                 fn MulType(Other: type) type {
                     const self: Self = undefined;
                     const other: Other = undefined;
@@ -175,15 +168,32 @@ fn Unit(comptime base_units_in: anytype, comptime prime_powers_in: anytype, comp
                 }
 
                 pub fn mul(self: Self, other: anytype) MulType(@TypeOf(other)) {
-                    return .{ .value = self.value * other.value };
+                    const multiplier = switch (@typeInfo(@TypeOf(other))) {
+                        .ComptimeFloat, .Float => other,
+                        else => other.value,
+                    };
+                    return .{ .value = self.value * multiplier };
                 }
 
                 pub fn reciprocal(self: Self) Reciprocal.Of(Scalar) {
                     return .{ .value = 1.0 / self.value };
                 }
 
-                pub fn div(self: Self, other: anytype) MulType(@TypeOf(other).Reciprocal) {
-                    return .{ .value = self.value / other.value };
+                fn DivType(Other: type) type {
+                    const self: Self = undefined;
+                    const other: Other = undefined;
+                    return switch (@typeInfo(Other)) {
+                        .ComptimeFloat, .Float => Self,
+                        else => Per(Other.UnitType).Of(@TypeOf(self.value, other.value)),
+                    };
+                }
+
+                pub fn div(self: Self, other: anytype) DivType(@TypeOf(other)) {
+                    const divisor = switch (@typeInfo(@TypeOf(other))) {
+                        .ComptimeFloat, .Float => other,
+                        else => other.value,
+                    };
+                    return .{ .value = self.value / divisor };
                 }
 
                 pub fn pow(self: Self, power: Fraction) Pow(power).Of(Scalar) {
@@ -381,6 +391,12 @@ test "mul" {
     const six_degree_metres = MetreDegree32.init(6.0);
 
     try testing.expect(two_metres.mul(three_degrees).eql(six_degree_metres));
+    try testing.expect(two_metres.mul(3.0).eql(Metre32.init(6.0)));
+}
+
+test "div" {
+    try testing.expect(MetreDegree32.init(6.0).div(Degree32.init(2.0)).eql(Metre32.init(3.0)));
+    try testing.expect(Metre32.init(6.0).div(3.0).eql(Metre32.init(2.0)));
 }
 
 const PerDegree32 = PerDegree.Of(f32);
