@@ -12,34 +12,44 @@ const FloatFactor = factorization.Factorization(1, comptime_float, float_compare
 const int_compare = compare.NumberCompare(comptime_int);
 const IntFactor = factorization.Factorization(1, comptime_int, int_compare.before, int_compare.eql);
 
+/// Integer factorization with no factors.
 const one = factorization.primeFactorization(1);
 
+/// Dimensionless, unscaled unit type. 
 pub const One = Unit(BaseUnitFactor.one, one, FloatFactor.one);
 
+/// Creates a new base limit from a name. 
 pub fn BaseUnit(name: []const u8) type {
     return Unit(BaseUnitFactor.fromBase(name), one, FloatFactor.one);
 }
 
+/// Creates a factorization in prime factors from a fraction.
 fn FractionalPrefixFromFraction(frac: Fraction) type {
     return Unit(BaseUnitFactor.one, factorization.fractionInPrimes(frac), FloatFactor.one);
 }
 
+/// Creates a factorization in prime factors from the numerator and denominator of a fraction.
 pub fn FractionalPrefix(numerator: comptime_int, denominator: comptime_int) type {
     return FractionalPrefixFromFraction(Fraction.init(numerator, denominator));
 }
 
+/// Creates a factorization in prime factors from a fraction.
 pub fn IntPrefix(number: comptime_int) type {
     return FractionalPrefixFromFraction(Fraction.fromInt(number));
 }
 
+/// Creates an integer factorization containing the given number to the power 1. Designed to be used when "number" is prime.
 pub fn PrimePrefix(number: comptime_int) type {
     return Unit(BaseUnitFactor.one, IntFactor.fromBase(number), FloatFactor.one);
 }
 
+/// Creates a float factorization containing the given number to the power 1. 
+/// Designed to be used when "number" not a rational power of a rational numer (e.g. pi).
 pub fn FloatPrefix(number: comptime_float) type {
     return Unit(BaseUnitFactor.one, one, FloatFactor.fromBase(number));
 }
 
+/// Type representing a unit as a prodcut of powers of base units, prime numbers and floats.
 fn Unit(comptime base_units_in: anytype, comptime prime_powers_in: anytype, comptime float_powers_in: anytype) type {
     return struct {
         const base_units = base_units_in;
@@ -47,6 +57,7 @@ fn Unit(comptime base_units_in: anytype, comptime prime_powers_in: anytype, comp
         const float_powers = float_powers_in;
         const Outer = @This();
 
+        /// Makes the unit a quantity of this unit multiplied by a quanity of unit Other.
         pub fn Times(Other: type) type {
             return Unit(
                 base_units.mul(Other.base_units),
@@ -55,32 +66,40 @@ fn Unit(comptime base_units_in: anytype, comptime prime_powers_in: anytype, comp
             );
         }
 
+        /// The unit of the reciprocal of a quanitity of this unit. 
         pub const Reciprocal = ToThe(-1);
 
+        /// Makes the unit a quantity of this unit divided multiplied by a quanity of unit Other.
         pub fn Per(Other: type) type {
             return Times(Other.Reciprocal);
         }
 
+        /// Scales this unit by a fraction.
         pub fn TimesFraction(multiplier: Fraction) type {
             return Times(FractionalPrefixFromFraction(multiplier));
         }
 
+        /// Raises this unit to a fractional power.
         pub fn Pow(power: Fraction) type {
             return Unit(base_units.pow(power), prime_powers.pow(power), float_powers.pow(power));
         }
 
+        /// Raises this unit to a integer power.
         pub fn ToThe(power: comptime_int) type {
             return Pow(Fraction.fromInt(power));
         }
 
+        /// Takes the power-th root of this unit.
         pub fn Root(power: comptime_int) type {
             return Pow(Fraction.fromInt(power).reciprocal());
         }
 
+        /// Creates and OffsetUnit with the current unit as the base unit and given offest.
         pub fn OffsetBy(offset: Fraction) type {
             return OffsetUnit(@This(), offset);
         }
 
+        /// Makes the quantity value * @This;
         pub fn times(value: anytype) Of(@TypeOf(value)) {
             return .{ .value = value };
         }
@@ -139,6 +158,12 @@ fn Unit(comptime base_units_in: anytype, comptime prime_powers_in: anytype, comp
                 pub fn neg(self: Self) Self {
                     return .{
                         .value = -self.value,
+                    };
+                }
+
+                pub fn abs(self: Self) Self {
+                    return .{
+                        .value = @abs(self.value),
                     };
                 }
 
@@ -371,6 +396,14 @@ test "neg" {
 
     try testing.expect(oneDegree.neg().eql(minusOneDegree));
     try testing.expect(minusOneDegree.neg().eql(oneDegree));
+}
+
+test "abs" {
+    const oneDegree = Degree32.init(1.0);
+    const minusOneDegree = Degree16.init(-1.0);
+
+    try testing.expect(oneDegree.abs().eql(oneDegree));
+    try testing.expect(minusOneDegree.abs().eql(oneDegree));
 }
 
 test "add" {
