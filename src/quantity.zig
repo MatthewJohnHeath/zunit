@@ -47,7 +47,14 @@ pub fn FloatPrefix(number: comptime_float) type {
     return Unit(BaseUnitFactor.one, IntFactor.one, FloatFactor.fromBase(number));
 }
 
-/// Type representing a unit as a prodcut of powers of base units, prime numbers and floats.
+/// Creates the type representing a unit as a prodcut of powers of base units, prime numbers and floats.
+/// Requires: 
+///     - base_units_in of type factorization.Factorization(SIZE, []const u8, compare.string_before, compare.string_eql) for some SIZE ,
+///       with the base strings in increasing order.
+///     - prime_powers_in of type factorization.Factorization(SIZE, comptime_int, int_compare.before, int_compare.eql) for some SIZE ,
+///       with the base integers in increasing order.
+///     - float_powers_in of type factorization.Factorization(SIZE, comptime_float, float_compare.before, float_compare.eql) for some SIZE ,
+///       with the base floats in increasing order.
 fn Unit(comptime base_units_in: anytype, comptime prime_powers_in: anytype, comptime float_powers_in: anytype) type {
     return struct {
         const base_units = base_units_in;
@@ -92,23 +99,27 @@ fn Unit(comptime base_units_in: anytype, comptime prime_powers_in: anytype, comp
             return Pow(Fraction.fromInt(power).reciprocal());
         }
 
-        /// Creates and OffsetUnit with the current unit as the base unit and given offest.
+        /// Creates an OffsetUnit with the current unit as the base unit and given offest.
         pub fn OffsetBy(offset: Fraction) type {
             return OffsetUnit(@This(), offset);
         }
 
-        /// Makes the quantity with value of the current unit;
+        /// Makes the quantity with value of the current unit.
         pub fn times(value: anytype) Of(@TypeOf(value)) {
             return .{ .value = value };
         }
 
+        /// Makes the type of a quantity with the current unit and the given float type as the scalar.
         pub fn Of(Scalar: type) type {
             return struct {
+                /// The number of units.
                 value: Scalar,
 
                 const Self = @This();
+                /// The units of the current quantity.
                 pub const UnitType = Outer;
 
+                /// Creates a quantity.
                 pub fn init(val: Scalar) Self {
                     return .{ .value = val };
                 }
@@ -123,48 +134,57 @@ fn Unit(comptime base_units_in: anytype, comptime prime_powers_in: anytype, comp
                     }
                 }
 
+                /// Equals.
                 pub fn eql(self: Self, other: anytype) bool {
                     assertSameUnits(other, "eql");
                     return self.value == other.value;
                 }
 
+                /// Not equals.
                 pub fn neql(self: Self, other: anytype) bool {
                     assertSameUnits(other, "neql");
                     return !self.eql(other);
                 }
 
+                /// Less than.
                 pub fn lt(self: Self, other: anytype) bool {
                     assertSameUnits(other, "lt");
                     return self.value < other.value;
                 }
 
+                /// Greater than.
                 pub fn gt(self: Self, other: anytype) bool {
                     assertSameUnits(other, "gt");
                     return other.lt(self);
                 }
 
+                /// Less than or equal.
                 pub fn le(self: Self, other: anytype) bool {
                     assertSameUnits(other, "le");
                     return !self.gt(other);
                 }
 
+                /// Greater than.
                 pub fn ge(self: Self, other: anytype) bool {
                     assertSameUnits(other, "ge");
                     return !self.lt(other);
                 }
 
+                /// Negation.
                 pub fn neg(self: Self) Self {
                     return .{
                         .value = -self.value,
                     };
                 }
 
+                /// Absolute value.
                 pub fn abs(self: Self) Self {
                     return .{
                         .value = @abs(self.value),
                     };
                 }
 
+                /// Adds a quantity with the same units. 
                 pub fn add(self: Self, other: anytype) Of(@TypeOf(self.value, other.value)) {
                     assertSameUnits(other, "add");
                     return .{
@@ -172,12 +192,15 @@ fn Unit(comptime base_units_in: anytype, comptime prime_powers_in: anytype, comp
                     };
                 }
 
+                /// Subtracts a quantity with the same units. 
                 pub fn sub(self: Self, other: anytype) Of(@TypeOf(self.value, other.value)) {
                     assertSameUnits(other, "sub");
                     return .{
                         .value = self.value - other.value,
                     };
                 }
+
+                /// Subtracts a quantity with the same units. Included for compatibiliy with OffsetUnit quantities.
                 pub const diff = sub;
 
                 fn ValueType(T: anytype) type {
@@ -196,6 +219,7 @@ fn Unit(comptime base_units_in: anytype, comptime prime_powers_in: anytype, comp
                     };
                 }
 
+                /// Multiplies by a Unit quantity or a float.
                 pub fn mul(self: Self, other: anytype) MulType(@TypeOf(other)) {
                     const multiplier = switch (@typeInfo(@TypeOf(other))) {
                         .ComptimeFloat, .Float => other,
@@ -204,6 +228,7 @@ fn Unit(comptime base_units_in: anytype, comptime prime_powers_in: anytype, comp
                     return .{ .value = self.value * multiplier };
                 }
 
+                /// Reciprocal.
                 pub fn reciprocal(self: Self) Reciprocal.Of(Scalar) {
                     return .{ .value = 1.0 / self.value };
                 }
@@ -217,6 +242,7 @@ fn Unit(comptime base_units_in: anytype, comptime prime_powers_in: anytype, comp
                     };
                 }
 
+                /// Divides by a Unit quantity or a float.
                 pub fn div(self: Self, other: anytype) DivType(@TypeOf(other)) {
                     const divisor = switch (@typeInfo(@TypeOf(other))) {
                         .ComptimeFloat, .Float => other,
@@ -225,16 +251,19 @@ fn Unit(comptime base_units_in: anytype, comptime prime_powers_in: anytype, comp
                     return .{ .value = self.value / divisor };
                 }
 
+                /// Raises quantity to a fractional power, which must be known at compile time.
                 pub fn pow(self: Self, power: Fraction) Pow(power).Of(Scalar) {
                     return .{ .value = std.math.pow(@TypeOf(self.value), self.value, power.toFloat()) };
                 }
 
+                /// Raises quantity to an integer power, which must be known at compile time.
                 pub fn powi(self: Self, power: comptime_int) ToThe(power).Of(Scalar) {
                     return self.pow(Fraction.fromInt(power));
                 }
 
-                pub fn root(self: Self, power: comptime_int) Root(power).Of(Scalar) {
-                    return self.pow(Fraction.fromInt(power).reciprocal());
+                /// Calculates the n-th root, for n-known at compile time.
+                pub fn root(self: Self, n: comptime_int) Root(n).Of(Scalar) {
+                    return self.pow(Fraction.fromInt(n).reciprocal());
                 }
 
                 fn fromAbsolute(self: Self) Self {
@@ -242,6 +271,7 @@ fn Unit(comptime base_units_in: anytype, comptime prime_powers_in: anytype, comp
                 }
                 const Absolute = Self;
 
+                /// Converts the quantity to a different type. The output type is required to a quantity of a Unit or OffsetUnit with the same base units. 
                 pub fn convert(self: Self, OtherType: type) OtherType {
                     const QuotientType = UnitType.Per(OtherType.Absolute.UnitType);
                     comptime {
