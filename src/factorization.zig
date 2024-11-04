@@ -285,6 +285,11 @@ test "distinctPrimeFactorCount" {
 }
 
 pub fn primeFactorization(number: comptime_int) ComptimeIntFactorization(distinctPrimeFactorCount(number)) {
+    comptime{
+        if(number <= 0){
+            @compileError("Only positive integers can be factored into primes.");
+        }
+    }
     const size = distinctPrimeFactorCount(number);
     if (size == 0) {
         return oneInPrimes;

@@ -21,29 +21,41 @@ pub fn BaseUnit(name: []const u8) type {
     return Unit(BaseUnitFactor.fromBase(name), IntFactor.one, FloatFactor.one);
 }
 
-/// Creates a factorization in prime factors from a fraction.
+/// Creates a factorization in prime factors from a fraction. The fraction must be positive and known at compile time.
 fn FractionalPrefixFromFraction(frac: Fraction) type {
     return Unit(BaseUnitFactor.one, factorization.fractionInPrimes(frac), FloatFactor.one);
 }
 
-/// Creates a factorization in prime factors from the numerator and denominator of a fraction.
+/// Creates a factorization in prime factors from the numerator and denominator of a fraction. The fraction must be positive and known at compile time.
 pub fn FractionalPrefix(numerator: comptime_int, denominator: comptime_int) type {
     return FractionalPrefixFromFraction(Fraction.init(numerator, denominator));
 }
 
-/// Creates a factorization in prime factors from a fraction.
+/// Creates a factorization in prime factors from a comptime_int. The number must be positive and known at compile time.
 pub fn IntPrefix(number: comptime_int) type {
     return FractionalPrefixFromFraction(Fraction.fromInt(number));
 }
 
-/// Creates an integer factorization containing the given number to the power 1. Designed to be used when "number" is prime.
+/// Creates an integer factorization containing the given comptime_int to the power 1. 
+/// Designed to be used when "number" is prime. Will not compile if "number" is not positive.
 pub fn PrimePrefix(number: comptime_int) type {
+    comptime{
+        if(number <= 0){
+            @compileError("Only positive integers can be used to create PrimePrefix.");
+        }
+    }
     return Unit(BaseUnitFactor.one, IntFactor.fromBase(number), FloatFactor.one);
 }
 
 /// Creates a float factorization containing the given number to the power 1. 
 /// Designed to be used when "number" not a rational power of a rational numer (e.g. pi).
+/// Will not compile if "number" is not positive.
 pub fn FloatPrefix(number: comptime_float) type {
+    comptime{
+        if(number <= 0.0){
+            @compileError("Only positive floats can be used to create FloatPrefix.");
+        }
+    }
     return Unit(BaseUnitFactor.one, IntFactor.one, FloatFactor.fromBase(number));
 }
 
