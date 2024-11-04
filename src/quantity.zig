@@ -12,15 +12,13 @@ const FloatFactor = factorization.Factorization(1, comptime_float, float_compare
 const int_compare = compare.NumberCompare(comptime_int);
 const IntFactor = factorization.Factorization(1, comptime_int, int_compare.before, int_compare.eql);
 
-/// Integer factorization with no factors.
-const one = factorization.primeFactorization(1);
 
 /// Dimensionless, unscaled unit type. 
-pub const One = Unit(BaseUnitFactor.one, one, FloatFactor.one);
+pub const One = Unit(BaseUnitFactor.one, IntFactor.one, FloatFactor.one);
 
 /// Creates a new base limit from a name. 
 pub fn BaseUnit(name: []const u8) type {
-    return Unit(BaseUnitFactor.fromBase(name), one, FloatFactor.one);
+    return Unit(BaseUnitFactor.fromBase(name), IntFactor.one, FloatFactor.one);
 }
 
 /// Creates a factorization in prime factors from a fraction.
@@ -46,7 +44,7 @@ pub fn PrimePrefix(number: comptime_int) type {
 /// Creates a float factorization containing the given number to the power 1. 
 /// Designed to be used when "number" not a rational power of a rational numer (e.g. pi).
 pub fn FloatPrefix(number: comptime_float) type {
-    return Unit(BaseUnitFactor.one, one, FloatFactor.fromBase(number));
+    return Unit(BaseUnitFactor.one, IntFactor.one, FloatFactor.fromBase(number));
 }
 
 /// Type representing a unit as a prodcut of powers of base units, prime numbers and floats.
@@ -99,7 +97,7 @@ fn Unit(comptime base_units_in: anytype, comptime prime_powers_in: anytype, comp
             return OffsetUnit(@This(), offset);
         }
 
-        /// Makes the quantity value * @This;
+        /// Makes the quantity with value of the current unit;
         pub fn times(value: anytype) Of(@TypeOf(value)) {
             return .{ .value = value };
         }
@@ -266,8 +264,7 @@ const pi = FloatFactor.fromBase(std.math.pi);
 const Degree = Unit(radian, one_over_180, pi);
 
 const metre = BaseUnitFactor.fromBase("metre");
-const f_one = FloatFactor.one;
-const Metre = Unit(metre, one, f_one);
+const Metre = Unit(metre, IntFactor.one, FloatFactor.one);
 
 const MetreDegree = Unit(metre.mul(radian), one_over_180, pi);
 
@@ -467,7 +464,7 @@ test "root" {
 }
 
 test "convert" {
-    const Radian32 = Unit(radian, one, f_one).Of(f32);
+    const Radian32 = Unit(radian, IntFactor.one, FloatFactor.one).Of(f32);
     const epsilon = 0.0000001;
     try testing.expect(std.math.approxEqAbs(f32, Degree32.init(180.0).convert(Radian32).value, std.math.pi, epsilon));
 
