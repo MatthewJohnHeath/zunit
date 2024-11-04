@@ -10,6 +10,14 @@ fn Factor(BaseType: type) type {
     return struct { base: BaseType, power: Fraction };
 }
 
+/// Makes a struct represting a product of powers of distinct elements of a given base type.
+/// It is required that: 
+///     - before is a partial order and eq be is equivalence relation. 
+///     - if 0 < i < j < size then the following evaluate to true:
+///         before(factors[i].base, factors[j].base), 
+///         !eq(factors[i].base, factors[j].base), 
+///     - if factor is in factors !factors.power.isZero()
+/// The functions in the struct will preserve these invariants. 
 pub fn Factorization(size: comptime_int, Type: type, before: fn (lhs: Type, rhs: Type) bool, eq: fn (lhs: Type, rhs: Type) bool) type {
     return struct {
         factors: [size]Factor(Type),
@@ -20,18 +28,21 @@ pub fn Factorization(size: comptime_int, Type: type, before: fn (lhs: Type, rhs:
             return Factorization(new_size, Type, before, eq);
         }
 
+        ///The empty product. Conceptually, the multiplicative identity of whatever of whatever Type of Thing the product represents. 
         pub const one = OfSize(0){ .factors = .{} };
 
+        ///A product containing exactly one factor, with power 1. Conceptually, to be identified wiht the base..
         pub fn fromBase(base: Type) OfSize(1) {
             return .{ .factors = .{.{ .base = base, .power = Fraction.fromInt(1) }} };
         }
 
+        ///Structural equality (modulo eq represing equality on the BaseType)
         pub fn eql(comptime self: Self, comptime other: Self) bool {
             if (self.factors.len != other.factors.len) {
                 return false;
             }
             for (self.factors, other.factors) |s, o| {
-                if (s.base != o.base) {
+                if (!eq(s.base, o.base)) {
                     return false;
                 }
                 if (!s.power.eql(o.power)) {
@@ -77,6 +88,10 @@ pub fn Factorization(size: comptime_int, Type: type, before: fn (lhs: Type, rhs:
             return count;
         }
 
+        /// Muliplication of two factorizations. 
+        /// Assuming the invarient on the ordering of the factors is met for self and other:
+        ///     - if the same base appears in both factorizations and the powers don't sum to zero, it appears in the product with the power equal to the sum of the powers.
+        ///     - no other factors appear in the product. 
         pub fn mul(self: Self, other: anytype) OfSize(self.mulSize(other)) {
             var factors: [self.mulSize(other)]Factor(Type) = undefined;
             var self_index = 0;
@@ -119,10 +134,12 @@ pub fn Factorization(size: comptime_int, Type: type, before: fn (lhs: Type, rhs:
             return .{ .factors = factors };
         }
 
+        /// The unique factorization of the same type such that self.mul(self.reciprocal()).eq(one)
         pub fn reciprocal(self: Self) Self {
             return self.pow(Fraction.fromInt(-1));
         }
 
+        /// Division of two factorizations. 
         pub fn div(self: Self, other: anytype) OfSize(self.mulSize(other.reciprocal())) {
             return self.mul(other.reciprocal());
         }
@@ -134,6 +151,7 @@ pub fn Factorization(size: comptime_int, Type: type, before: fn (lhs: Type, rhs:
             return Self;
         }
 
+        /// Raise the factorization to a fractional power
         pub fn pow(self: Self, exponent: Fraction) PowType(exponent) {
             if (exponent.eql(Fraction.fromInt(0))) {
                 return .{ .factors = .{} };
@@ -145,14 +163,17 @@ pub fn Factorization(size: comptime_int, Type: type, before: fn (lhs: Type, rhs:
             return .{ .factors = factors };
         }
 
+        /// Raise the factorization to in integer power
         pub fn powi(self: Self, exponent: comptime_int) PowType(Fraction.fromInt(exponent)) {
             return self.pow(Fraction.fromInt(exponent));
         }
 
-        pub fn root(self: Self, root_power: comptime_int) Self { // leaving return type as `Self` means 0th power won't compile.
+        /// Calculate the n-th root of the factorization
+        pub fn root(self: Self, root_power: comptime_int) Self { // leaving return type as `Self` means 0th root won't compile.
             return self.pow(Fraction.fromInt(root_power).reciprocal());
         }
 
+        /// Convert the factorization to a float. Requires that @as(f64,·) is defined for BaseType 
         pub fn toFloat(self:Self) f64{
             comptime var product = 1.0;
             for(self.factors)|factor|{

@@ -21,7 +21,8 @@ pub fn BaseUnit(name: []const u8) type {
     return Unit(BaseUnitFactor.fromBase(name), IntFactor.one, FloatFactor.one);
 }
 
-/// Creates a factorization in prime factors from a fraction. The fraction must be positive and known at compile time.
+/// Creates a factorization in prime factors from a fraction. 
+/// The fraction must be positive, finite and known at compile time, else this will not compile.
 fn FractionalPrefixFromFraction(frac: Fraction) type {
     return Unit(BaseUnitFactor.one, factorization.fractionInPrimes(frac), FloatFactor.one);
 }
