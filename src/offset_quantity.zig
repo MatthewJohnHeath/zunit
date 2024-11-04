@@ -4,6 +4,9 @@ const fraction = @import("comptime_fraction.zig");
 
 const Fraction = fraction.ComptimeFraction;
 
+/// Produces a type representing an existing unit, offset by some ration number of that unit.
+/// Used for e.g. the Celisus and Fahreneheit temperature scales.
+/// If the offset is zero returns in the original type. 
 pub fn OffsetUnit(AbsoluteUnit: type, offset_by: Fraction) type {
     if (offset_by.isZero()) {
         return AbsoluteUnit;
@@ -11,15 +14,20 @@ pub fn OffsetUnit(AbsoluteUnit: type, offset_by: Fraction) type {
     return struct {
         const offset_fraction = offset_by;
         pub const offset = AbsoluteUnit.Of(comptime_float).init(offset_by.toFloat());
+
+        /// Makes the quantity with value of the current unit.
         pub fn times(val: anytype) Of(@TypeOf(val)) {
             return .{ .value = val };
         }
         const Outer = @This();
 
+        /// Creates an OffsetUnit with the current AbsoluteUnit and the offset the sum of the current offset and the given offset. 
         pub fn OffsetBy(amount: Fraction) type {
             return OffsetUnit(AbsoluteUnit, offset_fraction.add(amount));
         }
 
+        /// Scales this unit by a fraction.
+        /// Requires that TimesFraction is also defined on AbsoluteUnit.
         pub fn TimesFraction(multiplier: Fraction) type {
             return OffsetUnit(AbsoluteUnit.TimesFraction(multiplier), offset_by.div(multiplier));
         }
@@ -32,6 +40,7 @@ pub fn OffsetUnit(AbsoluteUnit: type, offset_by: Fraction) type {
                 const UnitType = Outer;
                 pub const Absolute = AbsoluteUnit.Of(Scalar);
 
+                /// Creates a quantity.
                 pub fn init(val: Scalar) Self {
                     return .{ .value = val };
                 }
@@ -42,31 +51,37 @@ pub fn OffsetUnit(AbsoluteUnit: type, offset_by: Fraction) type {
                     }
                 }
 
+                /// Equals.
                 pub fn eql(self: Self, other: anytype) bool {
                     assertSameUnits(other, "eql");
                     return self.value == other.value;
                 }
 
+                /// Not equals. 
                 pub fn neql(self: Self, other: anytype) bool {
                     assertSameUnits(other, "neql");
                     return !self.eql(other);
                 }
 
+                /// Less than.
                 pub fn lt(self: Self, other: anytype) bool {
                     assertSameUnits(other, "lt");
                     return self.value < other.value;
                 }
 
+                /// Greater than.
                 pub fn gt(self: Self, other: anytype) bool {
                     assertSameUnits(other, "gt");
                     return other.lt(self);
                 }
 
+                /// Less than or equal.
                 pub fn le(self: Self, other: anytype) bool {
                     assertSameUnits(other, "le");
                     return !self.gt(other);
                 }
 
+                /// Greater than of equal.
                 pub fn ge(self: Self, other: anytype) bool {
                     assertSameUnits(other, "ge");
                     return !self.lt(other);
@@ -74,17 +89,19 @@ pub fn OffsetUnit(AbsoluteUnit: type, offset_by: Fraction) type {
 
                 fn TranslatedType(TranslationType: type) type {
                     if (AbsoluteUnit != TranslationType.UnitType) {
-                        @compileError("add and sub for OffsetUnit quantities can only be called on quantities of the underlying type.");
+                        @compileError("add and sub for OffsetUnit quantities can only be called on quantities of the AbsoluteUnit type.");
                     }
                     const self: Self = undefined;
                     const other: TranslationType = undefined;
                     return Of(@TypeOf(self.value, other.value));
                 }
 
+                /// Add a quantity of _AbsoluteUnit_ to self to get an new quantity of Unit.
                 pub fn add(self: Self, quantity: anytype) TranslatedType(@TypeOf(quantity)) {
                     return .{ .value = self.value + quantity.value };
                 }
 
+                /// Subtract a quantity of _AbsoluteUnit_ from self to get an new quantity of Unit.
                 pub fn sub(self: Self, quantity: anytype) TranslatedType(@TypeOf(quantity)) {
                     return .{ .value = self.value - quantity.value };
                 }
@@ -98,18 +115,23 @@ pub fn OffsetUnit(AbsoluteUnit: type, offset_by: Fraction) type {
                     return AbsoluteUnit.Of(@TypeOf(self.value, other.value));
                 }
 
+                /// Subtract a quantity of Unit from self to get a difference that is a quantity of AbsoluteUnit.
                 pub fn diff(self: Self, other: anytype) DifferenceType(@TypeOf(other)) {
                     return .{ .value = self.value - other.value };
                 }
 
+                /// Convert the offset quantity to a quantity of its AbsoluteUnit.
                 pub fn toAbsolute(self: Self) Absolute {
                     return Absolute.init(self.value).add(offset);
                 }
 
+                /// Convert a quantity of AbsoluteUnit to one of the offset unit.  
                 pub fn fromAbsolute(in: Absolute) Self {
                     return init(in.value).sub(offset);
                 }
 
+                /// Converts the quantity to a different type.
+                /// Requires that Absolute has a method convert to OtherType
                 pub fn convert(self: Self, OtherType: type) OtherType {
                     return self.toAbsolute().convert(OtherType);
                 }
@@ -118,6 +140,7 @@ pub fn OffsetUnit(AbsoluteUnit: type, offset_by: Fraction) type {
     };
 }
 
+///--------------Testing----------------------
 const small_namespace = struct {
     const Outer = @This();
 

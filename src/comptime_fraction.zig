@@ -26,30 +26,37 @@ pub const ComptimeFraction = struct {
         };
     }
     
+    /// Is the fraction zero?
     pub fn isZero(self:Self) bool{
         return self.numerator == 0;
     }
 
+    /// Creates the fraction represting an integer.
     pub fn fromInt(n: comptime_int) Self {
         return init(n, 1);
     }
 
+    /// Equality
     pub fn eql(self: Self, other: Self) bool {
         return (self.numerator == other.numerator) and (self.denominator == other.denominator);
     }
 
+    /// Inequality
     pub fn neg(self: Self) Self {
         return Self{ .numerator = -self.numerator, .denominator = self.denominator };
     }
 
+    /// Addition
     pub fn add(self: Self, other: Self) Self {
         return init(self.numerator * other.denominator + other.numerator * self.denominator, self.denominator * other.denominator);
     }
 
+    /// Subtraction
     pub fn sub(self: Self, other: Self) Self {
         return self.add(other.neg());
     }
 
+    /// Reciprocal
     pub fn reciprocal(self: Self) Self {
         if (self.numerator >= 0) {
             return Self{ .numerator = self.denominator, .denominator = self.numerator };
@@ -58,14 +65,17 @@ pub const ComptimeFraction = struct {
         }
     }
 
+    /// Multiplication
     pub fn mul(self: Self, other: Self) Self {
         return init(self.numerator * other.numerator, self.denominator * other.denominator);
     }
 
+    /// Division
     pub fn div(self: Self, other: Self) Self {
         return self.mul(other.reciprocal());
     }
 
+    /// Converts fraction to its represetation as a float.  
     pub fn toFloat(comptime self: Self) comptime_float {
         const numerator: comptime_float = @floatFromInt(self.numerator);
         const denominator: comptime_float = @floatFromInt(self.denominator);
