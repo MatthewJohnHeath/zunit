@@ -2,8 +2,13 @@ const std = @import("std");
 const testing = std.testing;
 const quantity = @import("quantity.zig");
 
+/// A rational number stored as numerator and denominator. 
 pub const Fraction = @import("comptime_fraction.zig").ComptimeFraction;
+
+/// Dimensionless, unscaled unit type. 
 pub const One = quantity.One;
+
+/// Creates a new base limit from a name. 
 pub const BaseUnit = quantity.BaseUnit;
 
 test "BaseUnit" {
@@ -12,14 +17,28 @@ test "BaseUnit" {
     try testing.expect(rate_of_iguanas.eql(Iguana.Per(Second).times(2.0)));
 }
 
+/// Creates a dimensionless unit type scaled by the fraction with the given  numerator and denominator. The fraction must be positive and known at compile time.
 pub const FractionalPrefix = quantity.FractionalPrefix;
+
+/// Creates a dimensionless unit type scaled by the given integer. 
+/// The integer must be positive and known at compile time.
 pub const IntPrefix = quantity.IntPrefix;
+
+/// Creates a dimensionless unit type scaled by the given integer, which is intended to be prime. 
+/// Using with a positive, non-prime number can result in unexpected mismatches between types.
+///  Will not compile if "number" is not positive.
 pub const PrimePrefix = quantity.PrimePrefix;
+
+/// Creates a dimensionless unit type scaled by the given float. 
+/// Designed to be used when "number" not a rational power of a rational number (e.g. pi). 
+/// Otherwise use FractionalPrefix and call the method Root on the result.
+/// Will not compile if "number" is not positive.
 pub const FloatPrefix = quantity.FloatPrefix;
 
+
+///--------------------------------A bunch of specifc, named units-------------------
 pub const Metre = BaseUnit("metre");
 pub const metres = Metre.times;
-
 test "metres" {
     const two: f32 = 2.0;
     const two_metres = metres(two);
@@ -113,6 +132,7 @@ pub const Tonne = Kilo.Times(Kilogram);
 pub const tonnes = Tonne.times;
 pub const Gram = Milli.Times(Kilogram);
 pub const gram = Gram.times;
+
 pub const Litre = Deci.Times(Metre).ToThe(3);
 pub const litres = Litre.times;
 test "litre" {

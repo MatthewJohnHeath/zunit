@@ -2,9 +2,8 @@ const std = @import("std");
 const testing = std.testing;
 
 /// A rational number stored as numerator and denominator. 
-/// Required (if methods are going to work) to be in reduced form with a non-neagtive numerator, 
-/// which all the methids returning a ComptimeFraction will ensure (so just don't set the fields to something else manually, please).
-
+/// Required (if methods are going to work) to be in reduced form with a non-negative numerator, 
+/// which all the methods returning a ComptimeFraction will ensure (so just don't set the fields to something else manually, please).
 pub const ComptimeFraction = struct {
     numerator: comptime_int,
     denominator: comptime_int,

@@ -27,18 +27,20 @@ fn FractionalPrefixFromFraction(frac: Fraction) type {
     return Unit(BaseUnitFactor.one, factorization.fractionInPrimes(frac), FloatFactor.one);
 }
 
-/// Creates a factorization in prime factors from the numerator and denominator of a fraction. The fraction must be positive and known at compile time.
+/// Creates a dimensionless unit type scaled by the fraction with the given  numerator and denominator. The fraction must be positive and known at compile time.
 pub fn FractionalPrefix(numerator: comptime_int, denominator: comptime_int) type {
     return FractionalPrefixFromFraction(Fraction.init(numerator, denominator));
 }
 
-/// Creates a factorization in prime factors from a comptime_int. The number must be positive and known at compile time.
+/// Creates a dimensionless unit type scaled by the given integer. 
+/// The integer must be positive and known at compile time.
 pub fn IntPrefix(number: comptime_int) type {
     return FractionalPrefixFromFraction(Fraction.fromInt(number));
 }
 
-/// Creates an integer factorization containing the given comptime_int to the power 1. 
-/// Designed to be used when "number" is prime. Will not compile if "number" is not positive.
+/// Creates a dimensionless unit type scaled by the given integer, which is intended to be prime. 
+/// Using with a positive, non-prime number can result in unexpected mismatches between types.
+///  Will not compile if "number" is not positive.
 pub fn PrimePrefix(number: comptime_int) type {
     comptime{
         if(number <= 0){
@@ -48,8 +50,9 @@ pub fn PrimePrefix(number: comptime_int) type {
     return Unit(BaseUnitFactor.one, IntFactor.fromBase(number), FloatFactor.one);
 }
 
-/// Creates a float factorization containing the given number to the power 1. 
-/// Designed to be used when "number" not a rational power of a rational numer (e.g. pi).
+/// Creates a dimensionless unit type scaled by the given float. 
+/// Designed to be used when "number" not a rational power of a rational number (e.g. pi). 
+/// Otherwise use FractionalPrefix and call the method Root on the result.
 /// Will not compile if "number" is not positive.
 pub fn FloatPrefix(number: comptime_float) type {
     comptime{
@@ -112,7 +115,7 @@ fn Unit(comptime base_units_in: anytype, comptime prime_powers_in: anytype, comp
             return Pow(Fraction.fromInt(power).reciprocal());
         }
 
-        /// Creates an OffsetUnit with the current unit as the base unit and given offest.
+        /// Creates an OffsetUnit with the current unit as the base unit and given offset.
         pub fn OffsetBy(offset: Fraction) type {
             return OffsetUnit(@This(), offset);
         }
