@@ -1,11 +1,17 @@
 const std = @import("std");
 const testing = std.testing;
 
+/// A rational number stored as numerator and denominator. 
+/// Required (if methods are going to work) to be in reduced form with a non-neagtive numerator, 
+/// which all the methids returning a ComptimeFraction will ensure (so just don't set the fields to something else manually, please).
+
 pub const ComptimeFraction = struct {
     numerator: comptime_int,
     denominator: comptime_int,
     const Self = @This();
 
+    /// Creates the fraction representing top/bottom in its lowest terms with a non-negative numerator.
+    /// If initialized with zero as the denominator, gives 1/0 for positve numerator, -1/0 for negative numerator and will not compile for 0/0.
     pub fn init(top: comptime_int, bottom: comptime_int) Self {
         const divisor = std.math.gcd(@abs(top), @abs(bottom));
         comptime var numerator = top / divisor;
@@ -83,6 +89,16 @@ test "init" {
     const minus_half = ComptimeFraction.init(1 << 10, -1 << 11);
     try testing.expect(minus_half.numerator == -1);
     try testing.expect(minus_half.denominator == 2);
+
+    try testing.expect(ComptimeFraction.init(2,0).numerator == 1);
+    try testing.expect(ComptimeFraction.init(2,0).denominator == 0);
+
+
+    try testing.expect(ComptimeFraction.init(-2,0).numerator == -1);
+    try testing.expect(ComptimeFraction.init(-2,0).denominator == 0);
+
+    //Will not compile if the following is uncommented  
+    //try testing.expect(ComptimeFraction.init(0,0).denominator == 0);
 }
 
 test "fromInt" {
